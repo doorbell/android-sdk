@@ -1,5 +1,6 @@
 package io.doorbell.android;
 
+import io.doorbell.android.callbacks.OnShowCallback;
 import io.doorbell.android.manavo.rest.RestCallback;
 
 import java.lang.reflect.Method;
@@ -41,6 +42,7 @@ public class Doorbell extends AlertDialog.Builder {
 	private String mEmailHint = "Your email address";
 	private int mEmailFieldVisibility = View.VISIBLE;
 	private int mPoweredByVisibility = View.VISIBLE;
+	private OnShowCallback mOnShowCallback = null;
 	
 	private String mEmail = "";
 	
@@ -189,6 +191,11 @@ public class Doorbell extends AlertDialog.Builder {
 		return this;
 	}
 	
+	public Doorbell setOnShowCallback(OnShowCallback onShowCallback) {
+		this.mOnShowCallback = onShowCallback;
+		return this;
+	}
+	
 	public Doorbell impression() {
 		this.mApi.impression();
 		
@@ -253,6 +260,10 @@ public class Doorbell extends AlertDialog.Builder {
 				Doorbell.this.mApi.sendFeedback(Doorbell.this.mMessageField.getText().toString(), Doorbell.this.mEmailField.getText().toString(), Doorbell.this.mProperties);
 			}
 		});
+		
+		if (this.mOnShowCallback != null) {
+			this.mOnShowCallback.handle();
+		}
 		
 		return dialog;
 	}
