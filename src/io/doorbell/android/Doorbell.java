@@ -179,6 +179,11 @@ public class Doorbell extends AlertDialog.Builder {
 		return this;
 	}
 	
+	public Doorbell setMessageHint(String messageHint) {
+		this.mMessageHint = messageHint;
+		return this;
+	}
+	
 	public Doorbell setEmail(String email) {
 		this.mEmail = email;
 		return this;
