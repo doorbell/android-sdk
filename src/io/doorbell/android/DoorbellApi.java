@@ -47,11 +47,13 @@ public class DoorbellApi extends RestApi {
 		this.post("applications/"+this.mAppId+"/open?key="+this.mApiKey);
 	}
 	
-	public void sendFeedback(String message, String email, JSONObject properties) {
+	public void sendFeedback(String message, String email, JSONObject properties, String name) {
 		this.addParameter("message", message);
 		this.addParameter("email", email);
 		
 		this.addParameter("properties", properties.toString());
+		
+		this.addParameter("name", name);
 		
 		this.post("applications/"+this.mAppId+"/submit?key="+this.mApiKey);
 	}

@@ -45,6 +45,7 @@ public class Doorbell extends AlertDialog.Builder {
 	private OnShowCallback mOnShowCallback = null;
 	
 	private String mEmail = "";
+	private String mName = "";
 	
 	private EditText mMessageField;
 	private EditText mEmailField;
@@ -196,6 +197,11 @@ public class Doorbell extends AlertDialog.Builder {
 		return this;
 	}
 	
+	public Doorbell setName(String name) {
+		this.mName = name;
+		return this;
+	}
+	
 	public Doorbell impression() {
 		this.mApi.impression();
 		
@@ -257,7 +263,7 @@ public class Doorbell extends AlertDialog.Builder {
 						dialog.hide();
 					}
 				});
-				Doorbell.this.mApi.sendFeedback(Doorbell.this.mMessageField.getText().toString(), Doorbell.this.mEmailField.getText().toString(), Doorbell.this.mProperties);
+				Doorbell.this.mApi.sendFeedback(Doorbell.this.mMessageField.getText().toString(), Doorbell.this.mEmailField.getText().toString(), Doorbell.this.mProperties, Doorbell.this.mName);
 			}
 		});
 		
