@@ -7,18 +7,23 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 
+import java.lang.String;
+
 
 public class DoorbellApi extends RestApi {
-	
-	private String mApiKey;
+
+    public static final String DOORBELL_IO_URL = "https://doorbell.io/api/";
+    public static final String DOORBELL_IO_HOST = "doorbell.io";
+    public static final String DOORBELL_USER_AGENT = "Doorbell Android SDK";
+    private String mApiKey;
 	private long mAppId;
 	
 	public DoorbellApi(Activity activity) {
 		super(activity);
 		
-		this.BASE_URL = "https://doorbell.io/api/";
-		this.rest.setHost("doorbell.io");
-		this.setUserAgent("Doorbell Android SDK");
+		this.BASE_URL = DOORBELL_IO_URL;
+		this.rest.setHost(DOORBELL_IO_HOST);
+		this.setUserAgent(DOORBELL_USER_AGENT);
 		
 		this.acceptAllSslCertificates();
 	}

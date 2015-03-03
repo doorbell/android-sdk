@@ -4,5 +4,7 @@
     <string name="drbl__feedback">Feedback</string>
     <string name="drbl__whats_on_your_mind">What's on your mind?</string>
     <string name="ddrbl__your_email">Your email address</string>
-
+    <string name="ddrbl__send">Send</string>
+    <string name="ddrbl__cancle">Cancle</string>
+    <string name="ddrbl__sending">Sending ...</string>
 </resources>
