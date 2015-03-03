@@ -20,8 +20,6 @@ uploadArchives {
             authentication(userName: sonatypeUsername, password: sonatypePassword)
         }
 
-//        repository(url: "file:///Volumes/Coull/Code/maven/")
-
         pom.project {
             name 'Doorbell SDK'
             packaging 'aar'
