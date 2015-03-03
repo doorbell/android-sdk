@@ -1,5 +1,8 @@
 <resources>
 
     <string name="app_name">Doorbell</string>
+    <string name="drbl__feedback">Feedback</string>
+    <string name="drbl__whats_on_your_mind">What's on your mind?</string>
+    <string name="ddrbl__your_email">Your email address</string>
 
 </resources>

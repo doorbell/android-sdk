@@ -1,13 +1,5 @@
 package io.doorbell.android;
 
-import io.doorbell.android.callbacks.OnShowCallback;
-import io.doorbell.android.manavo.rest.RestCallback;
-
-import java.lang.reflect.Method;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -33,13 +25,21 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.lang.reflect.Method;
+
+import io.doorbell.android.callbacks.OnShowCallback;
+import io.doorbell.android.manavo.rest.RestCallback;
+
 public class Doorbell extends AlertDialog.Builder {
 
 	private Activity mActivity;
 	private Context mContext;
 	
-	private String mMessageHint = "What's on your mind?";
-	private String mEmailHint = "Your email address";
+	private String mMessageHint;
+	private String mEmailHint;
 	private int mEmailFieldVisibility = View.VISIBLE;
 	private int mPoweredByVisibility = View.VISIBLE;
 	private OnShowCallback mOnShowCallback = null;
@@ -66,7 +66,10 @@ public class Doorbell extends AlertDialog.Builder {
 		this.setAppId(id);
 		this.setApiKey(privateKey);
 		
-		this.setTitle("Feedback");
+		this.setTitle(getString(R.string.drbl__feedback);
+        this.setMessageHint(getString(R.string.drbl__whats_on_your_mind));
+        this.setEmail(getString(R.string.drbl__your_email));
+
 		this.setCancelable(true);
 		
 		this.buildProperties();
