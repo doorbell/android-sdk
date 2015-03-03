@@ -1,0 +1,69 @@
+apply plugin: 'android-library'
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+group = 'io.doorbell'
+archivesBaseName = 'android-sdk'
+version = '0.1.8'
+
+signing {
+    required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
+}
+
+uploadArchives {
+    configuration = configurations.archives
+    repositories.mavenDeployer {
+        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+        repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2") {
+            authentication(userName: sonatypeUsername, password: sonatypePassword)
+        }
+
+//        repository(url: "file:///Volumes/Coull/Code/maven/")
+
+        pom.project {
+            name 'Doorbell SDK'
+            packaging 'aar'
+            description 'In-app user feedback gathering SDK for Doorbell.io'
+            url 'https://github.com/doorbell/android-sdk'
+
+            scm {
+                url 'scm:git@github.com:doorbell/android-sdk.git'
+                connection 'scm:git@github.com:doorbell/android-sdk.git'
+                developerConnection 'scm:git@github.com:doorbell/android-sdk.git'
+            }
+
+            licenses {
+                license {
+                    name 'MIT License'
+                    url 'http://www.opensource.org/licenses/mit-license.php'
+                    distribution 'repo'
+                }
+            }
+
+            developers {
+                developer {
+                    id 'manavo'
+                    name 'Philip Manavopoulos'
+                }
+            }
+        }
+    }
+}
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "19.1.0"
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            resources.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+        }
+    }
+}
