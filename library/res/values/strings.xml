@@ -1,3 +1,10 @@
 <resources>
 
+    <string name="doorbell_title">Feedback</string>
+    <string name="doorbell_message_hint">What\'s on your mind?</string>
+    <string name="doorbell_email_hint">Your email address</string>
+    <string name="doorbell_send">Send</string>
+    <string name="doorbell_cancel">Cancel</string>
+    <string name="doorbell_sending">Sending ...</string>
+
 </resources>
