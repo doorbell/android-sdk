@@ -4,7 +4,7 @@ apply plugin: 'signing'
 
 group = 'io.doorbell'
 archivesBaseName = 'android-sdk'
-version = '0.1.9'
+version = '0.2.0'
 
 signing {
     required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
