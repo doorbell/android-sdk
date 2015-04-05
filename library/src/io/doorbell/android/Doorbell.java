@@ -141,7 +141,6 @@ public class Doorbell extends AlertDialog.Builder {
 
         }
 
-
         try {
             DisplayMetrics metrics = new DisplayMetrics();
 
@@ -227,6 +226,8 @@ public class Doorbell extends AlertDialog.Builder {
 
         LinearLayout mainLayout = new LinearLayout(this.mContext);
         mainLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        int padding = (int)this.mContext.getResources().getDimension(R.dimen.form_side_padding);
+        mainLayout.setPadding(padding, 0, padding, 0);
         mainLayout.setOrientation(LinearLayout.VERTICAL);
 
         this.mMessageField = new EditText(this.mContext);
