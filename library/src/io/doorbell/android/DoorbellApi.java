@@ -25,6 +25,8 @@ public class DoorbellApi extends RestApi {
         this.setUserAgent(DOORBELL_USER_AGENT);
 
         this.acceptAllSslCertificates();
+
+        this.reset();
     }
 
     public void setAppId(long id) {
@@ -37,6 +39,9 @@ public class DoorbellApi extends RestApi {
 
     public void reset() {
         super.reset();
+
+        this.addParameter("sdk", "android");
+        this.addParameter("version", this.activity.getString(R.string.doorbell_version));
 
         this.cachePolicy = RestCache.CachePolicy.NETWORK_ONLY;
     }

@@ -50,9 +50,6 @@ public class Doorbell extends AlertDialog.Builder {
     private Activity mActivity;
     private Context mContext;
 
-    private String mMessageHint;
-    private String mEmailHint;
-    private int mEmailFieldVisibility = View.VISIBLE;
     private int mPoweredByVisibility = View.VISIBLE;
     private OnShowCallback mOnShowCallback = null;
 
@@ -79,8 +76,6 @@ public class Doorbell extends AlertDialog.Builder {
         this.setApiKey(privateKey);
 
         this.setTitle(activity.getString(R.string.doorbell_title));
-        this.setMessageHint(activity.getString(R.string.doorbell_message_hint));
-        this.setEmailHint(activity.getString(R.string.doorbell_email_hint));
 
         this.setCancelable(true);
 
@@ -98,6 +93,8 @@ public class Doorbell extends AlertDialog.Builder {
         } catch (NameNotFoundException e) {
 
         }
+
+        this.buildView();
     }
 
     private void buildProperties() {
@@ -181,7 +178,7 @@ public class Doorbell extends AlertDialog.Builder {
     }
 
     public Doorbell setEmailFieldVisibility(int visibility) {
-        this.mEmailFieldVisibility = visibility;
+        this.mEmailField.setVisibility(visibility);
         return this;
     }
 
@@ -191,12 +188,52 @@ public class Doorbell extends AlertDialog.Builder {
     }
 
     public Doorbell setEmailHint(String emailHint) {
-        this.mEmailHint = emailHint;
+        this.mEmailField.setHint(emailHint);
+        return this;
+    }
+
+    public Doorbell setEmailHint(int emailHintResId) {
+        this.mEmailField.setHint(emailHintResId);
         return this;
     }
 
     public Doorbell setMessageHint(String messageHint) {
-        this.mMessageHint = messageHint;
+        this.mMessageField.setHint(messageHint);
+        return this;
+    }
+
+    public Doorbell setMessageHint(int messageHintResId) {
+        this.mMessageField.setHint(messageHintResId);
+        return this;
+    }
+
+    public Doorbell setPositiveButtonText(String text) {
+        this.setPositiveButton(text, null);
+        return this;
+    }
+
+    public Doorbell setPositiveButtonText(int textResId) {
+        this.setPositiveButton(textResId, null);
+        return this;
+    }
+
+    public Doorbell setNegativeButtonText(String text) {
+        this.setNegativeButton(text, null);
+        return this;
+    }
+
+    public Doorbell setNegativeButtonText(int textResId) {
+        this.setNegativeButton(textResId, null);
+        return this;
+    }
+
+    public Doorbell setTitle(String title) {
+        super.setTitle(title);
+        return this;
+    }
+
+    public Doorbell setTitle(int titleResId) {
+        super.setTitle(titleResId);
         return this;
     }
 
@@ -221,9 +258,7 @@ public class Doorbell extends AlertDialog.Builder {
         return this;
     }
 
-    public AlertDialog show() {
-        this.mApi.open();
-
+    private void buildView() {
         LinearLayout mainLayout = new LinearLayout(this.mContext);
         mainLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         int padding = (int)this.mContext.getResources().getDimension(R.dimen.form_side_padding);
@@ -232,18 +267,17 @@ public class Doorbell extends AlertDialog.Builder {
 
         this.mMessageField = new EditText(this.mContext);
         this.mMessageField.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        this.mMessageField.setHint(this.mMessageHint);
         this.mMessageField.setMinLines(2);
         this.mMessageField.setGravity(Gravity.TOP);
         this.mMessageField.setInputType(this.mMessageField.getInputType() | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+        this.setMessageHint(this.mActivity.getString(R.string.doorbell_message_hint));
         mainLayout.addView(this.mMessageField);
 
         this.mEmailField = new EditText(this.mContext);
         this.mEmailField.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        this.mEmailField.setHint(this.mEmailHint);
         this.mEmailField.setText(this.mEmail);
         this.mEmailField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-        this.mEmailField.setVisibility(this.mEmailFieldVisibility);
+        this.setEmailHint(this.mActivity.getString(R.string.doorbell_email_hint));
         mainLayout.addView(this.mEmailField);
 
         TextView poweredBy = new TextView(this.mContext);
@@ -254,11 +288,14 @@ public class Doorbell extends AlertDialog.Builder {
         poweredBy.setMovementMethod(LinkMovementMethod.getInstance());
         mainLayout.addView(poweredBy);
 
-
         this.setView(mainLayout);
 
-        this.setPositiveButton(this.mActivity.getString(R.string.doorbell_send), null);
-        this.setNegativeButton(this.mActivity.getString(R.string.doorbell_cancel), null);
+        this.setPositiveButtonText(this.mActivity.getString(R.string.doorbell_send));
+        this.setNegativeButtonText(this.mActivity.getString(R.string.doorbell_cancel));
+    }
+
+    public AlertDialog show() {
+        this.mApi.open();
 
         final AlertDialog dialog = super.show();
 
