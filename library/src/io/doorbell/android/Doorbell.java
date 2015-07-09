@@ -50,14 +50,13 @@ public class Doorbell extends AlertDialog.Builder {
     private Activity mActivity;
     private Context mContext;
 
-    private int mPoweredByVisibility = View.VISIBLE;
     private OnShowCallback mOnShowCallback = null;
 
-    private String mEmail = "";
     private String mName = "";
 
     private EditText mMessageField;
     private EditText mEmailField;
+    private TextView mPoweredByField;
 
     private JSONObject mProperties;
 
@@ -183,7 +182,7 @@ public class Doorbell extends AlertDialog.Builder {
     }
 
     public Doorbell setPoweredByVisibility(int visibility) {
-        this.mPoweredByVisibility = visibility;
+        this.mPoweredByField.setVisibility(visibility);
         return this;
     }
 
@@ -238,7 +237,7 @@ public class Doorbell extends AlertDialog.Builder {
     }
 
     public Doorbell setEmail(String email) {
-        this.mEmail = email;
+        this.mEmailField.setText(email);
         return this;
     }
 
@@ -275,18 +274,16 @@ public class Doorbell extends AlertDialog.Builder {
 
         this.mEmailField = new EditText(this.mContext);
         this.mEmailField.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        this.mEmailField.setText(this.mEmail);
         this.mEmailField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
         this.setEmailHint(this.mActivity.getString(R.string.doorbell_email_hint));
         mainLayout.addView(this.mEmailField);
 
-        TextView poweredBy = new TextView(this.mContext);
-        poweredBy.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        poweredBy.setText(Html.fromHtml(POWERED_BY_DOORBELL_TEXT));
-        poweredBy.setPadding(7, 7, 7, 7);
-        poweredBy.setVisibility(this.mPoweredByVisibility);
-        poweredBy.setMovementMethod(LinkMovementMethod.getInstance());
-        mainLayout.addView(poweredBy);
+        this.mPoweredByField = new TextView(this.mContext);
+        this.mPoweredByField.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        this.mPoweredByField.setText(Html.fromHtml(POWERED_BY_DOORBELL_TEXT));
+        this.mPoweredByField.setPadding(7, 7, 7, 7);
+        this.mPoweredByField.setMovementMethod(LinkMovementMethod.getInstance());
+        mainLayout.addView(this.mPoweredByField);
 
         this.setView(mainLayout);
 

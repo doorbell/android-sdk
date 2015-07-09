@@ -1,10 +1,10 @@
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 apply plugin: 'maven'
 apply plugin: 'signing'
 
 group = 'io.doorbell'
 archivesBaseName = 'android-sdk'
-version = '0.2.2'
+version = '0.2.3'
 
 signing {
     required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
@@ -52,7 +52,7 @@ uploadArchives {
 
 android {
     compileSdkVersion 22
-    buildToolsVersion "22"
+    buildToolsVersion "22.0.1"
 
     sourceSets {
         main {
