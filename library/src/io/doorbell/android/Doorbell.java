@@ -1,5 +1,6 @@
 package io.doorbell.android;
 
+import io.doorbell.android.callbacks.OnFeedbackSentCallback;
 import io.doorbell.android.callbacks.OnShowCallback;
 import io.doorbell.android.manavo.rest.RestCallback;
 
@@ -50,6 +51,7 @@ public class Doorbell extends AlertDialog.Builder {
     private Activity mActivity;
     private Context mContext;
 
+    private OnFeedbackSentCallback mOnFeedbackSentCallback = null;
     private OnShowCallback mOnShowCallback = null;
 
     private String mName = "";
@@ -246,6 +248,11 @@ public class Doorbell extends AlertDialog.Builder {
         return this;
     }
 
+    public Doorbell setOnFeedbackSentCallback(OnFeedbackSentCallback onFeedbackSentCallback) {
+        this.mOnFeedbackSentCallback = onFeedbackSentCallback;
+        return this;
+    }
+
     public Doorbell setName(String name) {
         this.mName = name;
         return this;
@@ -304,7 +311,11 @@ public class Doorbell extends AlertDialog.Builder {
                 Doorbell.this.mApi.setCallback(new RestCallback() {
                     @Override
                     public void success(Object obj) {
-                        Toast.makeText(Doorbell.this.mContext, obj.toString(), Toast.LENGTH_LONG).show();
+                        if (Doorbell.this.mOnFeedbackSentCallback != null) {
+                            Doorbell.this.mOnFeedbackSentCallback.handle(obj.toString());
+                        } else {
+                            Toast.makeText(Doorbell.this.mContext, obj.toString(), Toast.LENGTH_LONG).show();
+                        }
 
                         Doorbell.this.mMessageField.setText("");
                         Doorbell.this.mProperties = new JSONObject();
