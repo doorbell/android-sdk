@@ -1,10 +1,10 @@
 buildscript {
     repositories {
-        mavenCentral()
+        maven { url 'https://plugins.gradle.org/m2/' } // Mirrors jcenter() and mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath 'com.android.tools.build:gradle:2.1.0'
     }
 }
 
@@ -16,63 +16,105 @@ group = 'io.doorbell'
 version = '0.2.6'
 
 signing {
-    required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
+    required { has('release') && gradle.taskGraph.hasTask('uploadArchives') }
     sign configurations.archives
 }
 
 def getReleaseRepositoryUrl() {
     return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
-            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            : 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
 }
 
 def getSonatypeUsername() {
-    return hasProperty('sonatypeUsername') ? sonatypeUsername : ""
+    return hasProperty('sonatypeUsername') ? sonatypeUsername : ''
 }
 
 def getSonatypePassword() {
-    return hasProperty('sonatypePassword') ? sonatypePassword : ""
+    return hasProperty('sonatypePassword') ? sonatypePassword : ''
+}
+
+android {
+    compileSdkVersion 22 // TODO remove Apache HTTP dependencies
+    buildToolsVersion '23.0.3'
 }
 
 uploadArchives {
-    configuration = configurations.archives
-    repositories.mavenDeployer {
-        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+    repositories {
+        mavenDeployer {
 
-        repository(url: getReleaseRepositoryUrl()) {
-            authentication(userName: getSonatypeUsername(), password: getSonatypePassword())
-        }
+            configuration = configurations.archives
 
-        pom.project {
-            name 'Doorbell SDK'
-            packaging 'aar'
-            description 'In-app user feedback gathering SDK for Doorbell.io'
-            url 'https://github.com/doorbell/android-sdk'
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-            scm {
-                url 'scm:git@github.com:doorbell/android-sdk.git'
-                connection 'scm:git@github.com:doorbell/android-sdk.git'
-                developerConnection 'scm:git@github.com:doorbell/android-sdk.git'
+            repository(url: getReleaseRepositoryUrl()) {
+                authentication(userName: getSonatypeUsername(), password: getSonatypePassword())
             }
 
-            licenses {
-                license {
-                    name 'MIT License'
-                    url 'http://www.opensource.org/licenses/mit-license.php'
-                    distribution 'repo'
-                }
-            }
+            pom {
+                project {
+                    name 'Doorbell SDK'
+                    packaging 'aar'
+                    description 'In-app user feedback gathering SDK for Doorbell.io'
+                    url 'https://github.com/doorbell/android-sdk'
 
-            developers {
-                developer {
-                    id 'manavo'
-                    name 'Philip Manavopoulos'
+                    scm {
+                        url 'scm:git@github.com:doorbell/android-sdk.git'
+                        connection 'scm:git@github.com:doorbell/android-sdk.git'
+                        developerConnection 'scm:git@github.com:doorbell/android-sdk.git'
+                    }
+
+                    licenses {
+                        license {
+                            name 'MIT License'
+                            url 'http://www.opensource.org/licenses/mit-license.php'
+                            distribution 'repo'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'manavo'
+                            name 'Philip Manavopoulos'
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-android {
-    compileSdkVersion 22 // TODO remove Apache HTTP dependencies
-    buildToolsVersion '23.0.2'
+/**
+ * Generate Javadocs.
+ */
+task androidJavadocs(type: Javadoc) {
+    description "Generate Javadocs."
+
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+/**
+ * Generate Jar of Javadocs.
+ */
+task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+    description "Generate Javadoc Jar."
+    classifier = 'javadoc'
+
+    from androidJavadocs.destinationDir
+}
+
+/**
+ * Generate Java Sources Jar.
+ */
+task androidSourcesJar(type: Jar) {
+    description "Generates Java Sources."
+    classifier = 'sources'
+
+    from android.sourceSets.main.java.sourceFiles
+}
+
+// 'android-sdk-release.aar' is automatically added to 'artifacts'
+artifacts {
+    archives androidSourcesJar
+    archives androidJavadocsJar
 }
