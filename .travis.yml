@@ -1,13 +1,18 @@
 language: android
 
 jdk:
+ - oraclejdk7
  - oraclejdk8
+
+matrix:
+  allow_failures:
+    - jdk: oraclejdk7
 
 android:
   components:
     - platform-tools
     - tools
-    - build-tools-23.0.2
+    - build-tools-23.0.3
 #    - android-23 # need to remove Apache deps
     - android-22
     - extra-android-support
@@ -25,7 +30,12 @@ notifications:
 
 sudo: false
 
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+
 cache:
   directories:
     - $HOME/.gradle
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
 
