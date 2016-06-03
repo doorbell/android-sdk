@@ -1,14 +1,5 @@
 package io.doorbell.android;
 
-import io.doorbell.android.callbacks.OnFeedbackSentCallback;
-import io.doorbell.android.callbacks.OnShowCallback;
-import io.doorbell.android.manavo.rest.RestCallback;
-
-import java.lang.reflect.Method;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -33,6 +24,13 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import io.doorbell.android.callbacks.OnFeedbackSentCallback;
+import io.doorbell.android.callbacks.OnShowCallback;
+import io.doorbell.android.manavo.rest.RestCallback;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.lang.reflect.Method;
 
 public class Doorbell extends AlertDialog.Builder {
 
@@ -83,7 +81,6 @@ public class Doorbell extends AlertDialog.Builder {
         this.buildProperties();
 
 
-	    
         // Set app related properties
         PackageManager manager = activity.getPackageManager();
         try {
@@ -267,7 +264,7 @@ public class Doorbell extends AlertDialog.Builder {
     private void buildView() {
         LinearLayout mainLayout = new LinearLayout(this.mContext);
         mainLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        int padding = (int)this.mContext.getResources().getDimension(R.dimen.form_side_padding);
+        int padding = (int) this.mContext.getResources().getDimension(R.dimen.form_side_padding);
         mainLayout.setPadding(padding, 0, padding, 0);
         mainLayout.setOrientation(LinearLayout.VERTICAL);
 
