@@ -1,11 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="io.doorbell.android" >
+          package="io.doorbell.android">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-
-    <uses-sdk
-        android:minSdkVersion="4"
-        android:targetSdkVersion="23" />
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application>
     </application>

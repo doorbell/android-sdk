@@ -13,12 +13,7 @@ android:
     - platform-tools
     - tools
     - build-tools-23.0.3
-#    - android-23 # need to remove Apache deps
-    - android-22
-    - extra-android-support
-    - extra-google-google_play_services
-    - extra-android-m2repository
-    - extra-google-m2repository
+    - android-23
   licenses:
     - '.+'
 
@@ -38,4 +33,3 @@ cache:
     - $HOME/.gradle
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
-
