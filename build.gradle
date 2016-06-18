@@ -4,7 +4,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "com.android.tools.build:gradle:2.1.0"
+        classpath "com.android.tools.build:gradle:2.1.2"
     }
 }
 
@@ -14,14 +14,14 @@ group = "io.doorbell"
 version = "0.2.6"
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 24
+    buildToolsVersion "24.0.0"
 
     useLibrary "org.apache.http.legacy" // TODO remove when moving away from Apache
 
     defaultConfig {
         minSdkVersion 4
-        targetSdkVersion 23
+        targetSdkVersion 24
 
         resValue("string", "doorbell_version", project.version)
     }
