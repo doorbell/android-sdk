@@ -2,8 +2,23 @@
 
 View full documentation [here](https://doorbell.io/docs/android).
 
+Download
+--------
+
+Add this to you project-level `build.gradle`:
+
+```groovy
+repositories {
+    mavenCentral()
+}
+  
+dependencies {
+    compile "io.doorbell:android-sdk:0.2.6@aar"
+}
+```
+
 License
-=========
+-------
 
     The MIT License (MIT)
     
