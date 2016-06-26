@@ -2,27 +2,26 @@ apply plugin: "maven"
 apply plugin: "signing"
 
 signing {
-    required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
+    required { hasProperty("release") && gradle.taskGraph.hasTask("uploadArchives") }
     sign configurations.archives
 }
 
 def getReleaseRepositoryUrl() {
-    return hasProperty("RELEASE_REPOSITORY_URL") ? RELEASE_REPOSITORY_URL
+    return hasProperty("RELEASE_REPOSITORY_URL") ? property("RELEASE_REPOSITORY_URL")
             : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 }
 
 def getSonatypeUsername() {
-    return hasProperty("sonatypeUsername") ? sonatypeUsername : ""
+    return hasProperty("sonatypeUsername") ? property("sonatypeUsername") : ""
 }
 
 def getSonatypePassword() {
-    return hasProperty("sonatypePassword") ? sonatypePassword : ""
+    return hasProperty("sonatypePassword") ? property("sonatypePassword") : ""
 }
 
 uploadArchives {
     repositories {
         mavenDeployer {
-
             configuration = configurations.archives
 
             beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
