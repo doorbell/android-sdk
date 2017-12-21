@@ -1,15 +1,24 @@
 buildscript {
     repositories {
-        maven { url "https://plugins.gradle.org/m2/" } // Mirrors jcenter() and mavenCentral()
+        maven {
+            url 'https://maven.google.com/'
+            name 'Google'
+        }
+        maven {
+            url "https://plugins.gradle.org/m2/" // Mirrors jcenter() and mavenCentral()
+        }
     }
 
     dependencies {
         classpath "com.android.tools.build:gradle:3.0.1"
     }
 }
+
 apply plugin: "com.android.library"
+
 group = "io.doorbell"
 version = "0.2.7"
+
 android {
     compileSdkVersion 27
     buildToolsVersion '27.0.2'
