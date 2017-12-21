@@ -258,9 +258,9 @@ public class RestRequest {
             Header contentEncoding = response.getFirstHeader("Content-Encoding");
             if (contentEncoding != null && contentEncoding.getValue().equalsIgnoreCase("gzip")) {
                 InputStream instream = entity.getContent();
-                instream = new GZIPInputStream(instream);
+                GZIPInputStream gzipInputStream = new GZIPInputStream(instream);
 
-                InputStreamReader reader = new InputStreamReader(instream);
+                InputStreamReader reader = new InputStreamReader(gzipInputStream);
                 BufferedReader in = new BufferedReader(reader);
 
                 String readed;
@@ -268,6 +268,11 @@ public class RestRequest {
                 while ((readed = in.readLine()) != null) {
                     responseData += (readed);
                 }
+
+                in.close();
+                reader.close();
+                gzipInputStream.close();
+                instream.close();
             } else {
                 responseData = EntityUtils.toString(entity);
             }
