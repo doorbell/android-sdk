@@ -6,6 +6,10 @@ import io.doorbell.android.manavo.rest.RestCache;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.util.Base64;
+
+import java.io.ByteArrayOutputStream;
 
 
 public class DoorbellApi extends RestApi {
@@ -54,6 +58,17 @@ public class DoorbellApi extends RestApi {
     public void open() {
         this.setLoadingMessage(null);
         this.post("applications/" + this.mAppId + "/open?key=" + this.mApiKey);
+    }
+
+    public void sendFeedbackWithScreenshot(String message, String email, JSONObject properties, String name, Bitmap screenshot) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        screenshot.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream .toByteArray();
+        String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+        this.addParameter("android_screenshot", encoded);
+
+        this.sendFeedback(message, email, properties, name);
     }
 
     public void sendFeedback(String message, String email, JSONObject properties, String name) {

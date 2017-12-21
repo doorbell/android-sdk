@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.Bitmap;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.wifi.SupplicantState;
@@ -57,6 +58,7 @@ public class Doorbell extends AlertDialog.Builder {
     private EditText mMessageField;
     private EditText mEmailField;
     private TextView mPoweredByField;
+    private Bitmap mScreenshot;
 
     private JSONObject mProperties;
 
@@ -261,6 +263,15 @@ public class Doorbell extends AlertDialog.Builder {
         return this;
     }
 
+    public Doorbell captureScreenshot() {
+        View v = this.mActivity.getWindow().getDecorView().getRootView();
+        v.setDrawingCacheEnabled(true);
+        this.mScreenshot = Bitmap.createBitmap(v.getDrawingCache());
+        v.setDrawingCacheEnabled(false);
+
+        return this;
+    }
+
     private void buildView() {
         LinearLayout mainLayout = new LinearLayout(this.mContext);
         mainLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -320,7 +331,12 @@ public class Doorbell extends AlertDialog.Builder {
                         dialog.hide();
                     }
                 });
-                Doorbell.this.mApi.sendFeedback(Doorbell.this.mMessageField.getText().toString(), Doorbell.this.mEmailField.getText().toString(), Doorbell.this.mProperties, Doorbell.this.mName);
+
+                if (Doorbell.this.mScreenshot != null) {
+                    Doorbell.this.mApi.sendFeedbackWithScreenshot(Doorbell.this.mMessageField.getText().toString(), Doorbell.this.mEmailField.getText().toString(), Doorbell.this.mProperties, Doorbell.this.mName, Doorbell.this.mScreenshot);
+                } else {
+                    Doorbell.this.mApi.sendFeedback(Doorbell.this.mMessageField.getText().toString(), Doorbell.this.mEmailField.getText().toString(), Doorbell.this.mProperties, Doorbell.this.mName);
+                }
             }
         });
 
