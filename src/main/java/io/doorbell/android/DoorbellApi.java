@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.util.Base64;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Locale;
 
 
 public class DoorbellApi extends RestApi {
@@ -20,6 +21,7 @@ public class DoorbellApi extends RestApi {
 
     private String mApiKey;
     private long mAppId;
+    private String language;
 
     public DoorbellApi(Activity activity) {
         super(activity);
@@ -28,7 +30,7 @@ public class DoorbellApi extends RestApi {
         this.rest.setHost(DOORBELL_IO_HOST);
         this.setUserAgent(DOORBELL_USER_AGENT);
 
-        this.acceptAllSslCertificates();
+        this.language = activity.getResources().getConfiguration().locale.getLanguage();
 
         this.reset();
     }
@@ -39,6 +41,10 @@ public class DoorbellApi extends RestApi {
 
     public void setApiKey(String key) {
         this.mApiKey = key;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
     }
 
     public void reset() {
@@ -78,6 +84,8 @@ public class DoorbellApi extends RestApi {
         this.addParameter("properties", properties.toString());
 
         this.addParameter("name", name);
+
+        this.addParameter("language", this.language);
 
         this.post("applications/" + this.mAppId + "/submit?key=" + this.mApiKey);
     }

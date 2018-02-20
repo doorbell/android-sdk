@@ -32,6 +32,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Method;
+import java.util.Locale;
 
 public class Doorbell extends AlertDialog.Builder {
 
@@ -44,6 +45,8 @@ public class Doorbell extends AlertDialog.Builder {
     private static final String PROPERTY_ACTIVITY = "Activity";
     private static final String PROPERTY_APP_VERSION_NAME = "App Version Name";
     private static final String PROPERTY_APP_VERSION_CODE = "App Version Code";
+    private static final String PROPERTY_APP_LANGUAGE = "App Language";
+    private static final String PROPERTY_DEVICE_LANGUAGE = "Device Language";
 
     private static final String POWERED_BY_DOORBELL_TEXT = "Powered by <a href=\"https://doorbell.io\">Doorbell.io</a>";
 
@@ -114,7 +117,6 @@ public class Doorbell extends AlertDialog.Builder {
 
         }
 
-
         boolean mobileDataEnabled = false; // Assume disabled
         ConnectivityManager cm = (ConnectivityManager) this.mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         try {
@@ -125,7 +127,6 @@ public class Doorbell extends AlertDialog.Builder {
             mobileDataEnabled = (Boolean) method.invoke(cm);
         } catch (Exception e) {
             // Some problem accessible private API
-            // TODO do whatever error handling you want here
         }
         this.addProperty(PROPERTY_MOBILE_DATA_ENABLED, mobileDataEnabled);
 
@@ -155,6 +156,14 @@ public class Doorbell extends AlertDialog.Builder {
         } catch (Exception e) {
 
         }
+
+        this.addProperty(PROPERTY_APP_LANGUAGE, this.mActivity.getResources().getConfiguration().locale.getDisplayName());
+        this.addProperty(PROPERTY_DEVICE_LANGUAGE, Locale.getDefault().getDisplayName());
+    }
+
+    public Doorbell setApiLanguage(String language) {
+        this.mApi.setLanguage(language);
+        return this;
     }
 
     public Doorbell addProperty(String key, Object value) {
