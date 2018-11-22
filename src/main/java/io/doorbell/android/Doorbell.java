@@ -194,11 +194,6 @@ public class Doorbell extends AlertDialog.Builder {
         return this;
     }
 
-    public Doorbell setPoweredByVisibility(int visibility) {
-        this.mPoweredByField.setVisibility(visibility);
-        return this;
-    }
-
     public EditText getMessageField() {
         return this.mMessageField;
     }
@@ -223,6 +218,10 @@ public class Doorbell extends AlertDialog.Builder {
         return this.mNPSScoreLabelHigh;
     }
 
+    public TextView getPoweredByField() {
+        return this.mPoweredByField;
+    }
+
     public Doorbell setPositiveButtonText(String text) {
         this.setPositiveButton(text, null);
         return this;
@@ -240,16 +239,6 @@ public class Doorbell extends AlertDialog.Builder {
 
     public Doorbell setNegativeButtonText(int textResId) {
         this.setNegativeButton(textResId, null);
-        return this;
-    }
-
-    public Doorbell setTitle(String title) {
-        super.setTitle(title);
-        return this;
-    }
-
-    public Doorbell setTitle(int titleResId) {
-        super.setTitle(titleResId);
         return this;
     }
 
@@ -325,7 +314,7 @@ public class Doorbell extends AlertDialog.Builder {
         this.mNPSField.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         this.mNPSField.setMax(10);
         this.mSeekbarDefaultOffset = this.mNPSField.getThumbOffset();
-        this.resetSeekBar();
+        this.resetNPS();
         this.mNPSField.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -375,7 +364,7 @@ public class Doorbell extends AlertDialog.Builder {
         this.setNegativeButtonText(this.mActivity.getString(R.string.doorbell_cancel));
     }
 
-    private void resetSeekBar() {
+    private void resetNPS() {
         // To push the thumb off screen
         this.mNPSField.setThumbOffset(100000);
         this.mNPSField.setProgress(0);
@@ -394,6 +383,8 @@ public class Doorbell extends AlertDialog.Builder {
         this.mNPSLabel.setVisibility(View.GONE);
         this.mNPSField.setVisibility(View.GONE);
         this.mNPSScores.setVisibility(View.GONE);
+
+        this.resetNPS();
 
         return this;
     }
@@ -425,7 +416,7 @@ public class Doorbell extends AlertDialog.Builder {
                         }
 
                         Doorbell.this.mMessageField.setText("");
-                        Doorbell.this.resetSeekBar();
+                        Doorbell.this.resetNPS();
 
                         dialog.hide();
                     }
