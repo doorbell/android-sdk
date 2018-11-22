@@ -17,7 +17,7 @@ buildscript {
 apply plugin: "com.android.library"
 
 group = "io.doorbell"
-version = "0.2.9"
+version = "0.3.0"
 
 android {
     compileSdkVersion 28
@@ -26,7 +26,7 @@ android {
     useLibrary "org.apache.http.legacy" // TODO remove when moving away from Apache
 
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion 16
         targetSdkVersion 28
 
         resValue("string", "doorbell_version", project.version)

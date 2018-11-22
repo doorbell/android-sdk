@@ -23,6 +23,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import io.doorbell.android.callbacks.OnFeedbackSentCallback;
@@ -60,8 +61,16 @@ public class Doorbell extends AlertDialog.Builder {
 
     private EditText mMessageField;
     private EditText mEmailField;
+    private TextView mNPSLabel;
+    private TextView mNPSScoreLabelLow;
+    private TextView mNPSScoreLabelHigh;
+    private SeekBar mNPSField;
+    private LinearLayout mNPSScores;
     private TextView mPoweredByField;
     private Bitmap mScreenshot;
+
+    private Boolean mNPSSelected;
+    private int mSeekbarDefaultOffset;
 
     private JSONObject mProperties;
 
@@ -84,7 +93,6 @@ public class Doorbell extends AlertDialog.Builder {
         this.setCancelable(true);
 
         this.buildProperties();
-
 
         // Set app related properties
         PackageManager manager = activity.getPackageManager();
@@ -186,34 +194,33 @@ public class Doorbell extends AlertDialog.Builder {
         return this;
     }
 
-    public Doorbell setEmailFieldVisibility(int visibility) {
-        this.mEmailField.setVisibility(visibility);
-        return this;
-    }
-
     public Doorbell setPoweredByVisibility(int visibility) {
         this.mPoweredByField.setVisibility(visibility);
         return this;
     }
 
-    public Doorbell setEmailHint(String emailHint) {
-        this.mEmailField.setHint(emailHint);
-        return this;
+    public EditText getMessageField() {
+        return this.mMessageField;
     }
 
-    public Doorbell setEmailHint(int emailHintResId) {
-        this.mEmailField.setHint(emailHintResId);
-        return this;
+    public EditText getEmailField() {
+        return this.mEmailField;
     }
 
-    public Doorbell setMessageHint(String messageHint) {
-        this.mMessageField.setHint(messageHint);
-        return this;
+    public TextView getNPSLabel() {
+        return this.mNPSLabel;
     }
 
-    public Doorbell setMessageHint(int messageHintResId) {
-        this.mMessageField.setHint(messageHintResId);
-        return this;
+    public SeekBar getNPSField() {
+        return this.mNPSField;
+    }
+
+    public TextView getNPSScoreLabelLow() {
+        return this.mNPSScoreLabelLow;
+    }
+
+    public TextView getNPSScoreLabelHigh() {
+        return this.mNPSScoreLabelHigh;
     }
 
     public Doorbell setPositiveButtonText(String text) {
@@ -283,27 +290,80 @@ public class Doorbell extends AlertDialog.Builder {
 
     private void buildView() {
         LinearLayout mainLayout = new LinearLayout(this.mContext);
-        mainLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        mainLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         int padding = (int) this.mContext.getResources().getDimension(R.dimen.form_side_padding);
         mainLayout.setPadding(padding, 0, padding, 0);
         mainLayout.setOrientation(LinearLayout.VERTICAL);
 
         this.mMessageField = new EditText(this.mContext);
-        this.mMessageField.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        this.mMessageField.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         this.mMessageField.setMinLines(2);
         this.mMessageField.setGravity(Gravity.TOP);
         this.mMessageField.setInputType(this.mMessageField.getInputType() | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-        this.setMessageHint(this.mActivity.getString(R.string.doorbell_message_hint));
+        this.mMessageField.setHint(this.mActivity.getString(R.string.doorbell_message_hint));
         mainLayout.addView(this.mMessageField);
 
         this.mEmailField = new EditText(this.mContext);
-        this.mEmailField.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        this.mEmailField.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         this.mEmailField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-        this.setEmailHint(this.mActivity.getString(R.string.doorbell_email_hint));
+        this.mEmailField.setHint(this.mActivity.getString(R.string.doorbell_email_hint));
         mainLayout.addView(this.mEmailField);
 
+        this.mNPSLabel = new TextView(this.mContext);
+        LinearLayout.LayoutParams npsLabelLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        npsLabelLayoutParams.setMargins(0, 10, 0, 0);
+        this.mNPSLabel.setLayoutParams(npsLabelLayoutParams);
+        this.mNPSLabel.setText(R.string.doorbell_nps_label);
+        this.mNPSLabel.setVisibility(View.GONE);
+        mainLayout.addView(this.mNPSLabel);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            this.mNPSField = new SeekBar(this.mContext, null, 0, android.R.style.Widget_Material_SeekBar_Discrete);
+        } else {
+            this.mNPSField = new SeekBar(this.mContext);
+        }
+        this.mNPSField.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        this.mNPSField.setMax(10);
+        this.mSeekbarDefaultOffset = this.mNPSField.getThumbOffset();
+        this.resetSeekBar();
+        this.mNPSField.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                Doorbell.this.mNPSField.setThumbOffset(Doorbell.this.mSeekbarDefaultOffset);
+                Doorbell.this.mNPSSelected = true;
+            }
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        mainLayout.addView(this.mNPSField);
+        this.mNPSField.setVisibility(View.GONE);
+
+        this.mNPSScores = new LinearLayout(this.mContext);
+        LinearLayout.LayoutParams npsScoresLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        npsScoresLayoutParams.setMargins(0, 0, 0, 10);
+        this.mNPSScores.setLayoutParams(npsScoresLayoutParams);
+        this.mNPSScores.setOrientation(LinearLayout.HORIZONTAL);
+        this.mNPSScores.setVisibility(View.GONE);
+        this.mNPSScoreLabelLow = new TextView(this.mContext);
+        this.mNPSScoreLabelLow.setText(R.string.doorbell_nps_score_low);
+        this.mNPSScoreLabelLow.setGravity(Gravity.START);
+        this.mNPSScoreLabelLow.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        this.mNPSScores.addView(this.mNPSScoreLabelLow);
+        this.mNPSScoreLabelHigh = new TextView(this.mContext);
+        this.mNPSScoreLabelHigh.setText(R.string.doorbell_nps_score_high);
+        this.mNPSScoreLabelHigh.setGravity(Gravity.END);
+        this.mNPSScoreLabelHigh.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        this.mNPSScores.addView(this.mNPSScoreLabelHigh);
+        mainLayout.addView(this.mNPSScores);
+
         this.mPoweredByField = new TextView(this.mContext);
-        this.mPoweredByField.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        this.mPoweredByField.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         this.mPoweredByField.setText(Html.fromHtml(POWERED_BY_DOORBELL_TEXT));
         this.mPoweredByField.setPadding(7, 7, 7, 7);
         this.mPoweredByField.setMovementMethod(LinkMovementMethod.getInstance());
@@ -313,6 +373,36 @@ public class Doorbell extends AlertDialog.Builder {
 
         this.setPositiveButtonText(this.mActivity.getString(R.string.doorbell_send));
         this.setNegativeButtonText(this.mActivity.getString(R.string.doorbell_cancel));
+    }
+
+    private void resetSeekBar() {
+        // To push the thumb off screen
+        this.mNPSField.setThumbOffset(100000);
+        this.mNPSField.setProgress(0);
+        this.mNPSSelected = false;
+    }
+
+    public Doorbell enableNPSRatings() {
+        this.mNPSLabel.setVisibility(View.VISIBLE);
+        this.mNPSField.setVisibility(View.VISIBLE);
+        this.mNPSScores.setVisibility(View.VISIBLE);
+
+        return this;
+    }
+
+    public Doorbell disableNPSRatings() {
+        this.mNPSLabel.setVisibility(View.GONE);
+        this.mNPSField.setVisibility(View.GONE);
+        this.mNPSScores.setVisibility(View.GONE);
+
+        return this;
+    }
+
+    public Doorbell resetProperties() {
+        this.mProperties = new JSONObject();
+        this.buildProperties();
+
+        return this;
     }
 
     public AlertDialog show() {
@@ -335,11 +425,17 @@ public class Doorbell extends AlertDialog.Builder {
                         }
 
                         Doorbell.this.mMessageField.setText("");
-                        Doorbell.this.mProperties = new JSONObject();
+                        Doorbell.this.resetSeekBar();
 
                         dialog.hide();
                     }
                 });
+
+                if (Doorbell.this.mNPSSelected) {
+                    Doorbell.this.mApi.setNPSRating(Doorbell.this.mNPSField.getProgress());
+                } else {
+                    Doorbell.this.mApi.setNPSRating(-1);
+                }
 
                 if (Doorbell.this.mScreenshot != null) {
                     Doorbell.this.mApi.sendFeedbackWithScreenshot(Doorbell.this.mMessageField.getText().toString(), Doorbell.this.mEmailField.getText().toString(), Doorbell.this.mProperties, Doorbell.this.mName, Doorbell.this.mScreenshot);

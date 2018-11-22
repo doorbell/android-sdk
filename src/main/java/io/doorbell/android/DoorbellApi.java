@@ -22,6 +22,7 @@ public class DoorbellApi extends RestApi {
     private String mApiKey;
     private long mAppId;
     private String language;
+    private int npsRating;
 
     public DoorbellApi(Activity activity) {
         super(activity);
@@ -54,6 +55,7 @@ public class DoorbellApi extends RestApi {
         this.addParameter("version", this.activity.getString(R.string.doorbell_version));
 
         this.cachePolicy = RestCache.CachePolicy.NETWORK_ONLY;
+        this.npsRating = -1;
     }
 
     public void impression() {
@@ -77,6 +79,10 @@ public class DoorbellApi extends RestApi {
         this.sendFeedback(message, email, properties, name);
     }
 
+    public void setNPSRating(int score) {
+        this.npsRating = score;
+    }
+
     public void sendFeedback(String message, String email, JSONObject properties, String name) {
         this.addParameter("message", message);
         this.addParameter("email", email);
@@ -86,6 +92,10 @@ public class DoorbellApi extends RestApi {
         this.addParameter("name", name);
 
         this.addParameter("language", this.language);
+
+        if (this.npsRating >= 0) {
+            this.addParameter("nps", this.npsRating);
+        }
 
         this.post("applications/" + this.mAppId + "/submit?key=" + this.mApiKey);
     }
