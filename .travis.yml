@@ -11,7 +11,7 @@ android:
     - android-28
 
 script:
-    - ./gradlew build
+    - ./gradlew build --stacktrace
 
 notifications:
   email: true
