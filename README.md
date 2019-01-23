@@ -13,7 +13,7 @@ repositories {
 }
   
 dependencies {
-    compile "io.doorbell:android-sdk:0.2.9@aar"
+    implementation "io.doorbell:android-sdk:0.3.0@aar"
 }
 ```
 
