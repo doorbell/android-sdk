@@ -7,16 +7,16 @@ signing {
 }
 
 def getReleaseRepositoryUrl() {
-    return hasProperty("RELEASE_REPOSITORY_URL") ? property("RELEASE_REPOSITORY_URL")
+    return project.hasProperty("RELEASE_REPOSITORY_URL") ? project.property("RELEASE_REPOSITORY_URL")
             : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 }
 
 def getSonatypeUsername() {
-    return hasProperty("sonatypeUsername") ? property("sonatypeUsername") : ""
+    return project.hasProperty("sonatypeUsername") ? project.property("sonatypeUsername") : ""
 }
 
 def getSonatypePassword() {
-    return hasProperty("sonatypePassword") ? property("sonatypePassword") : ""
+    return project.hasProperty("sonatypePassword") ? project.property("sonatypePassword") : ""
 }
 
 uploadArchives {
