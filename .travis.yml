@@ -16,7 +16,7 @@ script:
     - ./gradlew clean assemble --stacktrace
 
 notifications:
-  email: false
+  email: true
 
 sudo: false
 
