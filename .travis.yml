@@ -7,10 +7,10 @@ android:
   components:
     - platform-tools
     - tools
-    - build-tools-24.0.0
-    - android-24
-  licenses:
-    - '.+'
+    - build-tools-28.0.3
+    - android-28
+#  licenses:
+#    - '.+'
 
 script:
     - ./gradlew clean assemble --stacktrace
