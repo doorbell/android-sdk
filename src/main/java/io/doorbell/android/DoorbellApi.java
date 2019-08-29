@@ -3,6 +3,7 @@ package io.doorbell.android;
 import io.doorbell.android.manavo.rest.RestApi;
 import io.doorbell.android.manavo.rest.RestCache;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.app.Activity;
@@ -10,6 +11,7 @@ import android.graphics.Bitmap;
 import android.util.Base64;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Locale;
 
 
@@ -23,6 +25,7 @@ public class DoorbellApi extends RestApi {
     private long mAppId;
     private String language;
     private int npsRating;
+    private ArrayList<String> tags;
 
     public DoorbellApi(Activity activity) {
         super(activity);
@@ -83,6 +86,10 @@ public class DoorbellApi extends RestApi {
         this.npsRating = score;
     }
 
+    public void setTags(ArrayList<String> tags) {
+        this.tags = tags;
+    }
+
     public void sendFeedback(String message, String email, JSONObject properties, String name) {
         this.addParameter("message", message);
         this.addParameter("email", email);
@@ -93,6 +100,8 @@ public class DoorbellApi extends RestApi {
 
         this.addParameter("language", this.language);
 
+        this.addParameter("tags_json", this.jsonTags().toString());
+
         if (this.npsRating >= 0) {
             this.addParameter("nps", this.npsRating);
         }
@@ -100,4 +109,17 @@ public class DoorbellApi extends RestApi {
         this.post("applications/" + this.mAppId + "/submit?key=" + this.mApiKey);
     }
 
+    private JSONArray jsonTags() {
+        JSONArray t = new JSONArray();
+
+        if (this.tags == null) {
+            return t;
+        }
+
+        for (int i=0; i < this.tags.size(); i++) {
+            t.put(this.tags.get(i));
+        }
+
+        return t;
+    }
 }

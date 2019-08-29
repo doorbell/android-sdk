@@ -33,6 +33,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Locale;
 
 public class Doorbell extends AlertDialog.Builder {
@@ -181,6 +182,11 @@ public class Doorbell extends AlertDialog.Builder {
             // caught
         }
 
+        return this;
+    }
+
+    public Doorbell setTags(ArrayList<String> tags) {
+        this.mApi.setTags(tags);
         return this;
     }
 
