@@ -8,6 +8,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
+import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.wifi.SupplicantState;
@@ -29,6 +30,8 @@ import android.widget.Toast;
 import io.doorbell.android.callbacks.OnFeedbackSentCallback;
 import io.doorbell.android.callbacks.OnShowCallback;
 import io.doorbell.android.manavo.rest.RestCallback;
+import io.doorbell.android.shake.ShakeDetector;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -55,6 +58,8 @@ public class Doorbell extends AlertDialog.Builder {
     private Activity mActivity;
     private Context mContext;
 
+    private AlertDialog mDialog;
+
     private OnFeedbackSentCallback mOnFeedbackSentCallback = null;
     private OnShowCallback mOnShowCallback = null;
 
@@ -76,6 +81,8 @@ public class Doorbell extends AlertDialog.Builder {
     private JSONObject mProperties;
 
     private DoorbellApi mApi;
+
+    private ShakeDetector shakeDetector;
 
     public Doorbell(Activity activity, long id, String privateKey) {
         super(activity);
@@ -107,6 +114,18 @@ public class Doorbell extends AlertDialog.Builder {
         }
 
         this.buildView();
+        this.mDialog = this.create();
+
+        this.shakeDetector = new ShakeDetector(new ShakeDetector.Listener() {
+            @Override
+            public void hearShake() {
+                try {
+                    Doorbell.this.show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     private void buildProperties() {
@@ -395,6 +414,34 @@ public class Doorbell extends AlertDialog.Builder {
         return this;
     }
 
+    public Doorbell enableShowOnShake() {
+        SensorManager sensorManager = (SensorManager)this.mActivity.getSystemService(Context.SENSOR_SERVICE);
+        this.shakeDetector.start(sensorManager);
+
+        return this;
+    }
+
+    public Doorbell disableShowOnShake() {
+        this.shakeDetector.stop();
+
+        SensorManager sensorManager = (SensorManager)this.mActivity.getSystemService(Context.SENSOR_SERVICE);
+        sensorManager.unregisterListener(this.shakeDetector);
+
+        return this;
+    }
+
+    public Doorbell setShakeSensitivity(int sensitivity) {
+        this.shakeDetector.setSensitivity(sensitivity);
+
+        return this;
+    }
+
+    public Doorbell destroy() {
+        this.disableShowOnShake();
+
+        return this;
+    }
+
     public Doorbell resetProperties() {
         this.mProperties = new JSONObject();
         this.buildProperties();
@@ -405,9 +452,9 @@ public class Doorbell extends AlertDialog.Builder {
     public AlertDialog show() {
         this.mApi.open();
 
-        final AlertDialog dialog = super.show();
+        this.mDialog.show();
 
-        Button positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+        Button positiveButton = this.mDialog.getButton(DialogInterface.BUTTON_POSITIVE);
         positiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -424,7 +471,7 @@ public class Doorbell extends AlertDialog.Builder {
                         Doorbell.this.mMessageField.setText("");
                         Doorbell.this.resetNPS();
 
-                        dialog.hide();
+                        Doorbell.this.mDialog.hide();
                     }
                 });
 
@@ -446,7 +493,7 @@ public class Doorbell extends AlertDialog.Builder {
             this.mOnShowCallback.handle();
         }
 
-        return dialog;
+        return this.mDialog;
     }
 
 }
