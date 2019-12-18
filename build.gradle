@@ -7,6 +7,7 @@ buildscript {
         maven {
             url "https://plugins.gradle.org/m2/" // Mirrors jcenter() and mavenCentral()
         }
+        google()
     }
 
     dependencies {
@@ -19,15 +20,25 @@ apply plugin: "com.android.library"
 group = "io.doorbell"
 version = "0.3.2"
 
+repositories {
+    jcenter()
+    mavenCentral()
+    google()
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+}
+
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     buildToolsVersion '28.0.3'
 
     useLibrary "org.apache.http.legacy" // TODO remove when moving away from Apache
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 28
+        targetSdkVersion 29
 
         resValue("string", "doorbell_version", project.version)
     }

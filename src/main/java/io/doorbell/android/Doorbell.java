@@ -1,7 +1,7 @@
 package io.doorbell.android;
 
+import androidx.appcompat.app.AlertDialog;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
@@ -39,7 +39,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class Doorbell extends AlertDialog.Builder {
+public class Doorbell {
 
     private static final String PROPERTY_MODEL = "Model";
     private static final String PROPERTY_ANDROID_VERSION = "Android Version";
@@ -58,6 +58,7 @@ public class Doorbell extends AlertDialog.Builder {
     private Activity mActivity;
     private Context mContext;
 
+    private AlertDialog.Builder mDialogBuilder;
     private AlertDialog mDialog;
 
     private OnFeedbackSentCallback mOnFeedbackSentCallback = null;
@@ -85,8 +86,11 @@ public class Doorbell extends AlertDialog.Builder {
     private ShakeDetector shakeDetector;
 
     public Doorbell(Activity activity, long id, String privateKey) {
-        super(activity);
+        this(activity, id, privateKey, new AlertDialog.Builder(activity));
+    }
 
+    public Doorbell(Activity activity, long id, String privateKey, AlertDialog.Builder dialogBuilder) {
+        this.mDialogBuilder = dialogBuilder;
         this.mApi = new DoorbellApi(activity);
 
         this.mProperties = new JSONObject();
@@ -96,9 +100,9 @@ public class Doorbell extends AlertDialog.Builder {
         this.setAppId(id);
         this.setApiKey(privateKey);
 
-        this.setTitle(activity.getString(R.string.doorbell_title));
+        this.mDialogBuilder.setTitle(activity.getString(R.string.doorbell_title));
 
-        this.setCancelable(true);
+        this.mDialogBuilder.setCancelable(true);
 
         this.buildProperties();
 
@@ -114,7 +118,6 @@ public class Doorbell extends AlertDialog.Builder {
         }
 
         this.buildView();
-        this.mDialog = this.create();
 
         this.shakeDetector = new ShakeDetector(new ShakeDetector.Listener() {
             @Override
@@ -126,6 +129,10 @@ public class Doorbell extends AlertDialog.Builder {
                 }
             }
         });
+    }
+
+    public AlertDialog.Builder getDialogBuilder() {
+        return this.mDialogBuilder;
     }
 
     private void buildProperties() {
@@ -248,22 +255,22 @@ public class Doorbell extends AlertDialog.Builder {
     }
 
     public Doorbell setPositiveButtonText(String text) {
-        this.setPositiveButton(text, null);
+        this.mDialogBuilder.setPositiveButton(text, null);
         return this;
     }
 
     public Doorbell setPositiveButtonText(int textResId) {
-        this.setPositiveButton(textResId, null);
+        this.mDialogBuilder.setPositiveButton(textResId, null);
         return this;
     }
 
     public Doorbell setNegativeButtonText(String text) {
-        this.setNegativeButton(text, null);
+        this.mDialogBuilder.setNegativeButton(text, null);
         return this;
     }
 
     public Doorbell setNegativeButtonText(int textResId) {
-        this.setNegativeButton(textResId, null);
+        this.mDialogBuilder.setNegativeButton(textResId, null);
         return this;
     }
 
@@ -383,7 +390,7 @@ public class Doorbell extends AlertDialog.Builder {
         this.mPoweredByField.setMovementMethod(LinkMovementMethod.getInstance());
         mainLayout.addView(this.mPoweredByField);
 
-        this.setView(mainLayout);
+        this.mDialogBuilder.setView(mainLayout);
 
         this.setPositiveButtonText(this.mActivity.getString(R.string.doorbell_send));
         this.setNegativeButtonText(this.mActivity.getString(R.string.doorbell_cancel));
@@ -452,6 +459,9 @@ public class Doorbell extends AlertDialog.Builder {
     public AlertDialog show() {
         this.mApi.open();
 
+        if (this.mDialog == null) {
+            this.mDialog = this.mDialogBuilder.create();
+        }
         this.mDialog.show();
 
         Button positiveButton = this.mDialog.getButton(DialogInterface.BUTTON_POSITIVE);
