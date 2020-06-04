@@ -11,9 +11,9 @@ Add this to you project-level `build.gradle`:
 repositories {
     mavenCentral()
 }
-  
+
 dependencies {
-    implementation "io.doorbell:android-sdk:0.3.0@aar"
+    implementation "io.doorbell:android-sdk:0.4.3@aar"
 }
 ```
 
