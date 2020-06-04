@@ -12,11 +12,11 @@ def getReleaseRepositoryUrl() {
 }
 
 def getSonatypeUsername() {
-    return project.hasProperty("sonatypeUsername") ? project.property("sonatypeUsername") : ""
+    return project.hasProperty("sonatypeUsername") ? project.property("sonatypeUsername") : System.getenv("MAVEN_USERNAME")
 }
 
 def getSonatypePassword() {
-    return project.hasProperty("sonatypePassword") ? project.property("sonatypePassword") : ""
+    return project.hasProperty("sonatypePassword") ? project.property("sonatypePassword") : System.getenv("MAVEN_PASSWORD")
 }
 
 uploadArchives {
