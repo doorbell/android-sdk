@@ -96,5 +96,5 @@ task androidSourcesJar(type: Jar) {
 // "android-sdk-release.aar" is automatically added to "artifacts"
 artifacts {
     archives androidSourcesJar
-    archives androidJavadocsJar
+//    archives androidJavadocsJar
 }

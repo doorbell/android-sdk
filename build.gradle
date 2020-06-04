@@ -11,7 +11,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "com.android.tools.build:gradle:3.5.3"
+        classpath "com.android.tools.build:gradle:4.0.0"
     }
 }
 
@@ -32,7 +32,7 @@ dependencies {
 
 android {
     compileSdkVersion 29
-    buildToolsVersion '28.0.3'
+    buildToolsVersion '29.0.3'
 
     useLibrary "org.apache.http.legacy" // TODO remove when moving away from Apache
 
