@@ -472,10 +472,16 @@ public class Doorbell {
                 Doorbell.this.mApi.setCallback(new RestCallback() {
                     @Override
                     public void success(Object obj) {
-                        if (Doorbell.this.mOnFeedbackSentCallback != null) {
-                            Doorbell.this.mOnFeedbackSentCallback.handle(obj.toString());
-                        } else {
-                            Toast.makeText(Doorbell.this.mContext, obj.toString(), Toast.LENGTH_LONG).show();
+                        try {
+                            if (Doorbell.this.mOnFeedbackSentCallback != null) {
+                                Doorbell.this.mOnFeedbackSentCallback.handle(obj.toString());
+                            } else {
+                                Toast.makeText(Doorbell.this.mContext, obj.toString(), Toast.LENGTH_LONG).show();
+                            }
+                        } catch (Exception e) {
+                            // Sometimes we get exceptions thrown, even from just the Toast message (https://stackoverflow.com/questions/48152659/toast-maketext-giving-error-inflating-class-textview-exception)
+                            // so add some protection here
+                            e.printStackTrace();
                         }
 
                         Doorbell.this.mMessageField.setText("");
