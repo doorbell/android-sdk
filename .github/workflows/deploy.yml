@@ -20,7 +20,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Prepare Gradle local.properties
-        run: echo ${{ secrets.SIGNING_SECRET_KEY_RING }} | base64 -d > secring.gpg && echo -e "signing.keyId=${{ secrets.SIGNING_KEY_ID }}\nsigning.password=${{ secrets.SIGNING_PASSWORD }}\nsigning.secretKeyRingFile=secring.gpg"
+        run: echo ${{ secrets.SIGNING_SECRET_KEY_RING }} | base64 -d > secring.gpg && echo -e "signing.keyId=${{ secrets.SIGNING_KEY_ID }}\nsigning.password=${{ secrets.SIGNING_PASSWORD }}\nsigning.secretKeyRingFile=secring.gpg" > local.properties
       - name: Publish package
         run: ./gradlew uploadArchives
         env:
