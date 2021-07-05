@@ -267,11 +267,11 @@ public class RestRequest {
 
             responseInputStream.close();
 
-            if (request.getResponseCode() >= 200 && request.getResponseCode() < 300) {
+            if (statusCode >= 200 && statusCode < 300) {
                 b.putString("data", responseData);
             } else {
                 b.putString("statusCodeError", responseData);
-                b.putInt("statusCodeErrorNumber", request.getResponseCode());
+                b.putInt("statusCodeErrorNumber", statusCode);
             }
         } catch (Exception e) {
             e.printStackTrace();
