@@ -55,10 +55,10 @@ public class Doorbell {
 
     private static final String POWERED_BY_DOORBELL_TEXT = "Powered by <a href=\"https://doorbell.io\">Doorbell.io</a>";
 
-    private Activity mActivity;
-    private Context mContext;
+    private final Activity mActivity;
+    private final Context mContext;
 
-    private AlertDialog.Builder mDialogBuilder;
+    private final AlertDialog.Builder mDialogBuilder;
     private AlertDialog mDialog;
 
     private OnFeedbackSentCallback mOnFeedbackSentCallback = null;
@@ -81,9 +81,9 @@ public class Doorbell {
 
     private JSONObject mProperties;
 
-    private DoorbellApi mApi;
+    private final DoorbellApi mApi;
 
-    private ShakeDetector shakeDetector;
+    private final ShakeDetector shakeDetector;
 
     public Doorbell(Activity activity, long id, String privateKey) {
         this(activity, id, privateKey, new AlertDialog.Builder(activity));
@@ -114,7 +114,7 @@ public class Doorbell {
             this.addProperty(PROPERTY_APP_VERSION_NAME, info.versionName);
             this.addProperty(PROPERTY_APP_VERSION_CODE, info.versionCode);
         } catch (NameNotFoundException e) {
-
+            e.printStackTrace();
         }
 
         this.buildView();
@@ -149,7 +149,7 @@ public class Doorbell {
 
             this.addProperty(PROPERTY_WI_FI_ENABLED, supState);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
 
         boolean mobileDataEnabled = false; // Assume disabled
@@ -171,7 +171,7 @@ public class Doorbell {
 
             this.addProperty(PROPERTY_GPS_ENABLED, gpsEnabled);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
 
         try {
@@ -182,14 +182,14 @@ public class Doorbell {
             String resolution = Integer.toString(metrics.widthPixels) + "x" + Integer.toString(metrics.heightPixels);
             this.addProperty(PROPERTY_SCREEN_RESOLUTION, resolution);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
 
         try {
             String activityName = this.mActivity.getClass().getSimpleName();
             this.addProperty(PROPERTY_ACTIVITY, activityName);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
 
         this.addProperty(PROPERTY_APP_LANGUAGE, this.mActivity.getResources().getConfiguration().locale.getDisplayName());

@@ -4,53 +4,29 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Base64;
 import android.util.Log;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
-import org.apache.http.NameValuePair;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.CoreProtocolPNames;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HTTP;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -58,52 +34,34 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.List;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.zip.GZIPInputStream;
 
 public class RestRequest {
 
     private String username;
     private String password;
-    private String host;
-    private int port;
-    private int sslPort;
     private Handler handler;
-    private ExecuteAsyncRequest asyncTask;
+    private final ExecutorService executorService;
 
     private boolean acceptAllSslCertificates = false;
 
-    private DefaultHttpClient httpClient;
-
-    private boolean useSsl = true;
-
-    private List<NameValuePair> data;
+    private Map<String, String> data;
 
     private String userAgent = null;
-    private HttpContext requestContext;
 
     private String contentType = null;
 
     public RestRequest() {
-        this.requestContext = new BasicHttpContext();
-        this.httpClient = this.getNewHttpClient();
-
-        // Default port to be 80
-        this.port = 80;
-        // Default SSL port to be 443
-        this.sslPort = 443;
+        this.executorService = Executors.newFixedThreadPool(1);
     }
 
     public void setContentType(String type) {
         this.contentType = type;
-    }
-
-    public HttpContext getRequestContext() {
-        return this.requestContext;
-    }
-
-    public DefaultHttpClient getHttpClient() {
-        return this.httpClient;
     }
 
     public void authorize(String username, String password) {
@@ -115,27 +73,11 @@ public class RestRequest {
         this.handler = handler;
     }
 
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public void setSslPort(int port) {
-        this.sslPort = port;
-    }
-
-    public void setSsl(boolean ssl) {
-        this.useSsl = ssl;
-    }
-
     public void acceptAllSslCertificates() {
         this.acceptAllSslCertificates = true;
     }
 
-    public void setData(List<NameValuePair> data) {
+    public void setData(Map<String, String> data) {
         this.data = data;
     }
 
@@ -143,7 +85,7 @@ public class RestRequest {
         this.userAgent = agent;
     }
 
-    public void get(String url) {
+    public void get(String url) throws IOException {
         if (this.data.size() > 0) {
             // if we don't already have some query string parameters, add a ?
             if (!url.contains("?")) {
@@ -151,61 +93,77 @@ public class RestRequest {
             } else { // if query sting parameter already exist, then keep adding to them
                 url += "&";
             }
-            for (int i = 0; i < this.data.size(); i++) {
-                NameValuePair p = this.data.get(i);
+
+            StringBuilder urlBuilder = new StringBuilder(url);
+            for (String key : this.data.keySet()) {
                 try {
-                    url += p.getName() + "=" + URLEncoder.encode(p.getValue(), "utf-8") + "&";
+                    urlBuilder.append(URLEncoder.encode(key, "utf-8")).append("=").append(URLEncoder.encode(this.data.get(key), "utf-8")).append("&");
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
             }
+            url = urlBuilder.toString();
             url = url.substring(0, url.length() - 1);
         }
-        HttpGet httpGet = new HttpGet(url);
-        this.prepareRequest(httpGet);
+
+        HttpsURLConnection httpURLConnection = (HttpsURLConnection) (new URL(url)).openConnection();
+        httpURLConnection.setRequestMethod("GET");
+
+        this.prepareRequest(httpURLConnection);
     }
 
-    public void post(String url) {
-        HttpPost httpPost = new HttpPost(url);
-        httpPost.setEntity(this.prepareData(this.data));
-        this.prepareRequest(httpPost);
+    public void post(String url) throws IOException {
+        HttpsURLConnection httpURLConnection = (HttpsURLConnection) (new URL(url)).openConnection();
+        httpURLConnection.setRequestMethod("POST");
+        httpURLConnection.setDoOutput(true);
+
+        this.prepareRequest(httpURLConnection);
     }
 
-    public void put(String url) {
-        HttpPut httpPut = new HttpPut(url);
-        httpPut.setEntity(this.prepareData(this.data));
-        this.prepareRequest(httpPut);
+    public void put(String url) throws IOException {
+        HttpsURLConnection httpURLConnection = (HttpsURLConnection) (new URL(url)).openConnection();
+        httpURLConnection.setRequestMethod("PUT");
+        httpURLConnection.setDoOutput(true);
+
+        this.prepareRequest(httpURLConnection);
     }
 
-    public void delete(String url) {
-        HttpDelete httpDelete = new HttpDelete(url);
-        this.prepareRequest(httpDelete);
+    public void delete(String url) throws IOException {
+        HttpsURLConnection httpURLConnection = (HttpsURLConnection) (new URL(url)).openConnection();
+        httpURLConnection.setRequestMethod("DELETE");
+
+        this.prepareRequest(httpURLConnection);
     }
 
-    protected HttpEntity prepareData(List<NameValuePair> nameValuePairs) {
+    protected byte[] prepareData() {
         if (this.contentType != null && this.contentType.equalsIgnoreCase("application/json")) {
             JSONObject data = new JSONObject();
             try {
-                for (int i = 0; i < nameValuePairs.size(); i++) {
-                    NameValuePair p = nameValuePairs.get(i);
-                    data.put(p.getName(), p.getValue());
+                for (String key : this.data.keySet()) {
+                    data.put(key, this.data.get(key));
                 }
 
-                Log.e("RestRequestSending", data.toString());
+                Log.d("RestRequestSending", data.toString());
 
-                StringEntity se = new StringEntity(data.toString());
-                se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-                return se;
+                return data.toString().getBytes(StandardCharsets.UTF_8);
             } catch (JSONException e) {
-                e.printStackTrace();
-                return null;
-            } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
                 return null;
             }
         } else {
             try {
-                return new UrlEncodedFormEntity(nameValuePairs, "UTF-8");
+                StringBuilder data = new StringBuilder();
+
+                for (String key : this.data.keySet()) {
+                    data.append(URLEncoder.encode(key, "utf-8")).append("=").append(URLEncoder.encode(this.data.get(key), "utf-8")).append("&");
+                }
+
+                // get rid of the last ampersand
+                if (data.length() > 0) {
+                    data.substring(0, data.length() - 1);
+                }
+
+                return data.toString().getBytes(StandardCharsets.UTF_8);
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
                 return null;
@@ -213,75 +171,92 @@ public class RestRequest {
         }
     }
 
-    private void prepareRequest(HttpRequest request) {
+    private void prepareRequest(HttpsURLConnection request) {
+        request.setDoInput(true);
+
         if (this.contentType != null) {
-            request.setHeader("Content-type", this.contentType);
+            request.setRequestProperty("Content-type", this.contentType);
         }
 
-        request.setHeader("Accept", "application/json");
+        request.setRequestProperty("Accept", "application/json");
 
-        this.asyncTask = new ExecuteAsyncRequest();
-        this.asyncTask.execute(request);
+        this.executorService.execute(() -> {
+            Bundle b = RestRequest.this.executeRequest(request);
+
+            Message m = new Message();
+            m.setData(b);
+            m.setTarget(RestRequest.this.handler);
+            m.sendToTarget();
+        });
     }
 
     public void cancelRequest() {
-        if (this.asyncTask != null) {
-            this.asyncTask.cancel(true);
-        }
+        this.executorService.shutdown();
     }
 
-    private Bundle executeRequest(HttpRequest request) {
+    private Bundle executeRequest(HttpsURLConnection request) {
         Bundle b = new Bundle();
 
         try {
             if (this.userAgent != null) {
-                this.httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, this.userAgent);
+                request.setRequestProperty("User-Agent", this.userAgent);
             }
 
             if (this.username != null && this.password != null) {
-                UsernamePasswordCredentials upc = new UsernamePasswordCredentials(this.username, this.password);
-                BasicScheme basicAuth = new BasicScheme();
-                request.addHeader(basicAuth.authenticate(upc, request));
-            }
-            request.addHeader("Accept-Encoding", "gzip");
+                String auth = this.username + ":" + this.password;
+                byte[] encodedAuth = Base64.encode(auth.getBytes(StandardCharsets.UTF_8), 0);
 
-            HttpHost targetHost;
-            if (!this.useSsl) {
-                targetHost = new HttpHost(this.host, this.port, "http");
-            } else {
-                targetHost = new HttpHost(this.host, this.sslPort, "https");
+                String authHeaderValue = "Basic " + new String(encodedAuth);
+                request.setRequestProperty("Authorization", authHeaderValue);
             }
-            HttpResponse response = this.httpClient.execute(targetHost, request, this.requestContext);
+            request.addRequestProperty("Accept-Encoding", "gzip");
 
+            try(OutputStream os = request.getOutputStream()) {
+                byte[] input = this.prepareData();
+                os.write(input, 0, input.length);
+            }
+
+            StringBuilder responseDataBuilder;
             String responseData;
-            HttpEntity entity = response.getEntity();
-            Header contentEncoding = response.getFirstHeader("Content-Encoding");
-            if (contentEncoding != null && contentEncoding.getValue().equalsIgnoreCase("gzip")) {
-                InputStream instream = entity.getContent();
-                GZIPInputStream gzipInputStream = new GZIPInputStream(instream);
+            String contentEncoding = request.getHeaderField("Content-Encoding");
+            if (contentEncoding != null && contentEncoding.equalsIgnoreCase("gzip")) {
+                GZIPInputStream gzipInputStream = new GZIPInputStream(request.getInputStream());
 
                 InputStreamReader reader = new InputStreamReader(gzipInputStream);
                 BufferedReader in = new BufferedReader(reader);
 
-                String readed;
-                responseData = "";
-                while ((readed = in.readLine()) != null) {
-                    responseData += (readed);
+                String line;
+                responseDataBuilder = new StringBuilder();
+                while ((line = in.readLine()) != null) {
+                    responseDataBuilder.append(line);
                 }
 
                 in.close();
                 reader.close();
                 gzipInputStream.close();
-                instream.close();
             } else {
-                responseData = EntityUtils.toString(entity);
+                InputStreamReader reader = new InputStreamReader(request.getInputStream());
+                BufferedReader in = new BufferedReader(reader);
+
+                String line;
+                responseDataBuilder = new StringBuilder();
+                while ((line = in.readLine()) != null) {
+                    responseDataBuilder.append(line);
+                }
+
+                in.close();
+                reader.close();
             }
 
-            if (response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() < 300) {
+            responseData = responseDataBuilder.toString();
+
+            request.getInputStream().close();
+
+            if (request.getResponseCode() >= 200 && request.getResponseCode() < 300) {
                 b.putString("data", responseData);
             } else {
                 b.putString("statusCodeError", responseData);
-                b.putInt("statusCodeErrorNumber", response.getStatusLine().getStatusCode());
+                b.putInt("statusCodeErrorNumber", request.getResponseCode());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -289,96 +264,6 @@ public class RestRequest {
         }
 
         return b;
-    }
-
-    private class ExecuteAsyncRequest extends AsyncTask<HttpRequest, Void, Bundle> {
-        @Override
-        protected Bundle doInBackground(HttpRequest... requests) {
-            for (HttpRequest request : requests) {
-                return RestRequest.this.executeRequest(request);
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Bundle b) {
-            Message m = new Message();
-            m.setData(b);
-            m.setTarget(RestRequest.this.handler);
-            m.sendToTarget();
-        }
-    }
-
-    // taken from http://stackoverflow.com/questions/2642777/trusting-all-certificates-using-httpclient-over-https
-    private DefaultHttpClient getNewHttpClient() {
-        if (this.acceptAllSslCertificates) {
-            try {
-                KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-                trustStore.load(null, null);
-
-                SSLSocketFactory sf = new MySSLSocketFactory(trustStore);
-                sf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-
-                HttpParams params = new BasicHttpParams();
-                HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-                HttpProtocolParams.setContentCharset(params, HTTP.UTF_8);
-
-                // Set the timeout in milliseconds until a connection is established.
-                // The default value is zero, that means the timeout is not used.
-                int timeoutConnection = 15000;
-                HttpConnectionParams.setConnectionTimeout(params, timeoutConnection);
-
-                // Set the default socket timeout (SO_TIMEOUT)
-                // in milliseconds which is the timeout for waiting for data.
-                int timeoutSocket = 45000;
-                HttpConnectionParams.setSoTimeout(params, timeoutSocket);
-
-                SchemeRegistry registry = new SchemeRegistry();
-                registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), this.port));
-                registry.register(new Scheme("https", sf, this.sslPort));
-
-                ClientConnectionManager ccm = new ThreadSafeClientConnManager(params, registry);
-
-                return new DefaultHttpClient(ccm, params);
-            } catch (Exception e) {
-                return new DefaultHttpClient();
-            }
-        } else {
-            return new DefaultHttpClient();
-        }
-    }
-
-    // taken from http://stackoverflow.com/questions/2642777/trusting-all-certificates-using-httpclient-over-https
-    private class MySSLSocketFactory extends SSLSocketFactory {
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-
-        public MySSLSocketFactory(KeyStore truststore) throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException, UnrecoverableKeyException {
-            super(truststore);
-
-            TrustManager tm = new X509TrustManager() {
-                public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-                }
-
-                public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-                }
-
-                public X509Certificate[] getAcceptedIssuers() {
-                    return null;
-                }
-            };
-
-            this.sslContext.init(null, new TrustManager[]{tm}, null);
-        }
-
-        @Override
-        public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException, UnknownHostException {
-            return this.sslContext.getSocketFactory().createSocket(socket, host, port, autoClose);
-        }
-
-        @Override
-        public Socket createSocket() throws IOException {
-            return this.sslContext.getSocketFactory().createSocket();
-        }
     }
 
 }

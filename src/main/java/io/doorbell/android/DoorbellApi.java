@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.util.Base64;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -18,7 +19,6 @@ import java.util.Locale;
 public class DoorbellApi extends RestApi {
 
     private static final String DOORBELL_IO_URL = "https://doorbell.io/api/";
-    private static final String DOORBELL_IO_HOST = "doorbell.io";
     private static final String DOORBELL_USER_AGENT = "Doorbell Android SDK";
 
     private String mApiKey;
@@ -31,7 +31,6 @@ public class DoorbellApi extends RestApi {
         super(activity);
 
         this.BASE_URL = DOORBELL_IO_URL;
-        this.rest.setHost(DOORBELL_IO_HOST);
         this.setUserAgent(DOORBELL_USER_AGENT);
 
         this.language = activity.getResources().getConfiguration().locale.getLanguage();

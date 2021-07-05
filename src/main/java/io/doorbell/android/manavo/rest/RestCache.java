@@ -1,7 +1,6 @@
 package io.doorbell.android.manavo.rest;
 
 import android.content.Context;
-import org.apache.http.NameValuePair;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -11,13 +10,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class RestCache {
 
-    public static boolean exists(RestApi api) {
+    public static boolean exists(RestApi api) throws UnsupportedEncodingException {
         String hash = RestCache.getRequestHash(api);
         if (hash == null) {
             return false;
@@ -27,7 +30,7 @@ public class RestCache {
         }
     }
 
-    public static String get(RestApi api) {
+    public static String get(RestApi api) throws UnsupportedEncodingException {
         String hash = RestCache.getRequestHash(api);
         if (hash == null) {
             return null;
@@ -53,7 +56,7 @@ public class RestCache {
         }
     }
 
-    public static void save(RestApi api, String data) {
+    public static void save(RestApi api, String data) throws UnsupportedEncodingException {
         String hash = RestCache.getRequestHash(api);
 
         if (hash != null) {
@@ -101,21 +104,17 @@ public class RestCache {
         return cachePath + "/" + hash;
     }
 
-    private static String getRequestHash(RestApi api) {
-        List<NameValuePair> params = api.getParameters();
+    private static String getRequestHash(RestApi api) throws UnsupportedEncodingException {
+        Map<String, String> params = api.getParameters();
 
-        String query = api.endpoint;
-
-        if (query == null) {
+        if (api.endpoint == null) {
             return null;
         }
 
-        NameValuePair p;
+        StringBuilder query = new StringBuilder(api.endpoint);
 
-        for (int i = 0; i < params.size(); i++) {
-            p = params.get(i);
-
-            query += URLEncoder.encode(p.getName()) + "=" + URLEncoder.encode(p.getValue()) + "&";
+        for (String key : params.keySet()) {
+            query.append(URLEncoder.encode(key, "utf-8")).append("=").append(URLEncoder.encode(params.get(key), "utf-8")).append("&");
         }
 
         // get rid of the last ampersand
@@ -124,8 +123,7 @@ public class RestCache {
         }
 
         try {
-            String hash = RestCache.SHA1(query);
-            return hash;
+            return RestCache.SHA1(query.toString());
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -154,12 +152,12 @@ public class RestCache {
         MessageDigest md;
         md = MessageDigest.getInstance("SHA-1");
         byte[] sha1hash = new byte[40];
-        md.update(text.getBytes("iso-8859-1"), 0, text.length());
+        md.update(text.getBytes(StandardCharsets.ISO_8859_1), 0, text.length());
         sha1hash = md.digest();
         return convertToHex(sha1hash);
     }
 
-    public class CachePolicy {
+    public static class CachePolicy {
         public static final int IGNORE_CACHE = 0;
         public static final int CACHE_THEN_NETWORK = 1;
         public static final int NETWORK_ONLY = 2;

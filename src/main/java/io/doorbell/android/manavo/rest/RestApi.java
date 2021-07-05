@@ -10,14 +10,14 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 
@@ -32,7 +32,7 @@ public class RestApi {
 
     protected String loadingMessage;
     protected ProgressDialog progressDialog;
-    private List<NameValuePair> parameters;
+    private Map<String, String> parameters;
 
     protected int cachePolicy = RestCache.CachePolicy.IGNORE_CACHE;
 
@@ -63,7 +63,11 @@ public class RestApi {
 
                             // we want to save the cache
                             if (RestApi.this.requestType.equalsIgnoreCase("get") && RestApi.this.cachePolicy != RestCache.CachePolicy.IGNORE_CACHE) {
-                                RestCache.save(RestApi.this, data.trim());
+                                try {
+                                    RestCache.save(RestApi.this, data.trim());
+                                } catch (UnsupportedEncodingException e) {
+                                    e.printStackTrace();
+                                }
                             }
 
                             if (RestApi.this.cachePolicy != RestCache.CachePolicy.UPDATE_CACHE) {
@@ -74,7 +78,11 @@ public class RestApi {
 
                             // we want to save the cache
                             if (RestApi.this.requestType.equalsIgnoreCase("get") && RestApi.this.cachePolicy != RestCache.CachePolicy.IGNORE_CACHE) {
-                                RestCache.save(RestApi.this, data.trim());
+                                try {
+                                    RestCache.save(RestApi.this, data.trim());
+                                } catch (UnsupportedEncodingException e) {
+                                    e.printStackTrace();
+                                }
                             }
 
                             if (RestApi.this.cachePolicy != RestCache.CachePolicy.UPDATE_CACHE) {
@@ -86,7 +94,11 @@ public class RestApi {
                             //RestApi.this.onError("Unknown format of data");
                             // we want to save the cache
                             if (RestApi.this.requestType.equalsIgnoreCase("get") && RestApi.this.cachePolicy != RestCache.CachePolicy.IGNORE_CACHE) {
-                                RestCache.save(RestApi.this, data.trim());
+                                try {
+                                    RestCache.save(RestApi.this, data.trim());
+                                } catch (UnsupportedEncodingException e) {
+                                    e.printStackTrace();
+                                }
                             }
 
                             if (RestApi.this.cachePolicy != RestCache.CachePolicy.UPDATE_CACHE) {
@@ -123,11 +135,11 @@ public class RestApi {
         this.endpoint = null;
         this.cachePolicy = RestCache.CachePolicy.IGNORE_CACHE;
 
-        this.parameters = new ArrayList<NameValuePair>();
+        this.parameters = new HashMap<>();
     }
 
     public void addParameter(String name, Object value) {
-        this.parameters.add(new BasicNameValuePair(name, value.toString()));
+        this.parameters.put(name, value.toString());
     }
 
     public void setLoadingMessage(String message) {
@@ -138,7 +150,7 @@ public class RestApi {
         this.loadingMessage = this.activity.getResources().getString(messageId);
     }
 
-    public List<NameValuePair> getParameters() {
+    public Map<String, String> getParameters() {
         return this.parameters;
     }
 
@@ -241,21 +253,25 @@ public class RestApi {
         this.endpoint = this.getEndpoint(url);
 
         if (this.cachePolicy == RestCache.CachePolicy.CACHE_THEN_NETWORK || this.cachePolicy == RestCache.CachePolicy.CACHE_ELSE_NETWORK) {
-            if (RestCache.exists(this)) {
-                String data = RestCache.get(this);
-                try {
-                    if (data.trim().substring(0, 1).equalsIgnoreCase("{")) {
-                        Object returnObject = new JSONObject(data);
-                        gotCache = true;
-                        RestApi.this.onSuccess(returnObject);
-                    } else if (data.trim().substring(0, 1).equalsIgnoreCase("[")) {
-                        Object returnObject = new JSONArray(data);
-                        gotCache = true;
-                        RestApi.this.onSuccess(returnObject);
+            try {
+                if (RestCache.exists(this)) {
+                    String data = RestCache.get(this);
+                    try {
+                        if (data.trim().substring(0, 1).equalsIgnoreCase("{")) {
+                            Object returnObject = new JSONObject(data);
+                            gotCache = true;
+                            RestApi.this.onSuccess(returnObject);
+                        } else if (data.trim().substring(0, 1).equalsIgnoreCase("[")) {
+                            Object returnObject = new JSONArray(data);
+                            gotCache = true;
+                            RestApi.this.onSuccess(returnObject);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
                 }
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
             }
         }
 
@@ -270,7 +286,11 @@ public class RestApi {
             }
 
             this.rest.setData(this.parameters);
-            this.rest.get(this.endpoint);
+            try {
+                this.rest.get(this.endpoint);
+            } catch (IOException e) {
+                this.onStatusCodeError(0, e.getMessage());
+            }
         }
     }
 
@@ -281,7 +301,11 @@ public class RestApi {
 
         this.showLoadingDialog();
         this.rest.setData(this.parameters);
-        this.rest.post(this.endpoint);
+        try {
+            this.rest.post(this.endpoint);
+        } catch (IOException e) {
+            this.onStatusCodeError(0, e.getMessage());
+        }
     }
 
     protected void put(String url) {
@@ -291,7 +315,11 @@ public class RestApi {
 
         this.showLoadingDialog();
         this.rest.setData(this.parameters);
-        this.rest.put(this.endpoint);
+        try {
+            this.rest.put(this.endpoint);
+        } catch (IOException e) {
+            this.onStatusCodeError(0, e.getMessage());
+        }
     }
 
     protected void delete(String url) {
@@ -300,7 +328,11 @@ public class RestApi {
         this.endpoint = this.getEndpoint(url);
 
         this.showLoadingDialog();
-        this.rest.delete(this.endpoint);
+        try {
+            this.rest.delete(this.endpoint);
+        } catch (IOException e) {
+            this.onStatusCodeError(0, e.getMessage());
+        }
     }
 
     public String getEndpoint(String part) {
