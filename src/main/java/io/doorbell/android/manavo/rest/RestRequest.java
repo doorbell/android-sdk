@@ -211,16 +211,29 @@ public class RestRequest {
             }
             request.addRequestProperty("Accept-Encoding", "gzip");
 
-            try(OutputStream os = request.getOutputStream()) {
+            if (request.getRequestMethod().equalsIgnoreCase("POST") || request.getRequestMethod().equalsIgnoreCase("PUT")) {
                 byte[] input = this.prepareData();
-                os.write(input, 0, input.length);
+                if (input.length > 0) {
+                    try (OutputStream os = request.getOutputStream()) {
+                        os.write(input, 0, input.length);
+                    }
+                }
+            }
+
+            int statusCode = request.getResponseCode();
+
+            InputStream responseInputStream;
+            if (request.getResponseCode() >= 200 && request.getResponseCode() < 300) {
+                responseInputStream = request.getInputStream();
+            } else {
+                responseInputStream = request.getErrorStream();
             }
 
             StringBuilder responseDataBuilder;
             String responseData;
             String contentEncoding = request.getHeaderField("Content-Encoding");
             if (contentEncoding != null && contentEncoding.equalsIgnoreCase("gzip")) {
-                GZIPInputStream gzipInputStream = new GZIPInputStream(request.getInputStream());
+                GZIPInputStream gzipInputStream = new GZIPInputStream(responseInputStream);
 
                 InputStreamReader reader = new InputStreamReader(gzipInputStream);
                 BufferedReader in = new BufferedReader(reader);
@@ -235,7 +248,7 @@ public class RestRequest {
                 reader.close();
                 gzipInputStream.close();
             } else {
-                InputStreamReader reader = new InputStreamReader(request.getInputStream());
+                InputStreamReader reader = new InputStreamReader(responseInputStream);
                 BufferedReader in = new BufferedReader(reader);
 
                 String line;
@@ -250,7 +263,9 @@ public class RestRequest {
 
             responseData = responseDataBuilder.toString();
 
-            request.getInputStream().close();
+            Log.d("RestRequest", "ResponseData: "+responseData);
+
+            responseInputStream.close();
 
             if (request.getResponseCode() >= 200 && request.getResponseCode() < 300) {
                 b.putString("data", responseData);
