@@ -2,6 +2,7 @@ package io.doorbell.android.manavo.rest;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.database.MatrixCursor;
@@ -10,6 +11,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.security.ProviderInstaller;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,6 +54,8 @@ public class RestApi {
         this.reset();
 
         this.rest = new RestRequest();
+
+        this.patchTLS();
 
         this.rest.setHandler(new Handler() {
             public void handleMessage(Message msg) {
@@ -122,6 +131,28 @@ public class RestApi {
                 RestApi.this.hideLoadingDialog();
             }
         });
+    }
+
+    private void patchTLS() {
+        Log.e("RestApi", "Trying to patch TLS");
+
+        try {
+            ProviderInstaller.installIfNeeded(this.activity);
+        } catch (GooglePlayServicesRepairableException e) {
+            // Indicates that Google Play services is out of date, disabled, etc.
+            // Prompt the user to install/update/enable Google Play services.
+            GoogleApiAvailability.getInstance().showErrorNotification(this.activity, e.getConnectionStatusCode());
+            Log.e("RestApi", "Exception patching TLS");
+            e.printStackTrace();
+        } catch (GooglePlayServicesNotAvailableException e) {
+            // Indicates a non-recoverable error; the ProviderInstaller is not able
+            // to install an up-to-date Provider.
+            Log.e("RestApi", "Exception patching TLS");
+            e.printStackTrace();
+        }
+
+        // If this is reached, you know that the provider was already up-to-date,
+        // or was successfully updated.
     }
 
     public void setCachePolicy(int cachePolicy) {

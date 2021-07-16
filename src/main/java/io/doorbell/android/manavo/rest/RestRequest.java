@@ -1,45 +1,34 @@
 package io.doorbell.android.manavo.rest;
 
-import android.os.AsyncTask;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Base64;
 import android.util.Log;
+
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.security.ProviderInstaller;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.GZIPInputStream;
+
 
 public class RestRequest {
 
@@ -145,8 +134,11 @@ public class RestRequest {
 
                 Log.d("RestRequestSending", data.toString());
 
-                return data.toString().getBytes(StandardCharsets.UTF_8);
+                return data.toString().getBytes("utf-8");
             } catch (JSONException e) {
+                e.printStackTrace();
+                return null;
+            } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
                 return null;
             }
@@ -163,7 +155,7 @@ public class RestRequest {
                     data.substring(0, data.length() - 1);
                 }
 
-                return data.toString().getBytes(StandardCharsets.UTF_8);
+                return data.toString().getBytes("utf-8");
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
                 return null;
@@ -204,7 +196,7 @@ public class RestRequest {
 
             if (this.username != null && this.password != null) {
                 String auth = this.username + ":" + this.password;
-                byte[] encodedAuth = Base64.encode(auth.getBytes(StandardCharsets.UTF_8), 0);
+                byte[] encodedAuth = Base64.encode(auth.getBytes("utf-8"), 0);
 
                 String authHeaderValue = "Basic " + new String(encodedAuth);
                 request.setRequestProperty("Authorization", authHeaderValue);

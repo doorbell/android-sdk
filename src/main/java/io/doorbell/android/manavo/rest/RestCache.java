@@ -10,13 +10,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class RestCache {
 
@@ -152,7 +148,7 @@ public class RestCache {
         MessageDigest md;
         md = MessageDigest.getInstance("SHA-1");
         byte[] sha1hash = new byte[40];
-        md.update(text.getBytes(StandardCharsets.ISO_8859_1), 0, text.length());
+        md.update(text.getBytes("ISO-8859-1"), 0, text.length());
         sha1hash = md.digest();
         return convertToHex(sha1hash);
     }
