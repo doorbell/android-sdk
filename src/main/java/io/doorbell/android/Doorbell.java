@@ -27,6 +27,8 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import io.doorbell.android.callbacks.OnErrorCallback;
 import io.doorbell.android.callbacks.OnFeedbackSentCallback;
 import io.doorbell.android.callbacks.OnShowCallback;
 import io.doorbell.android.manavo.rest.RestCallback;
@@ -63,6 +65,7 @@ public class Doorbell {
 
     private OnFeedbackSentCallback mOnFeedbackSentCallback = null;
     private OnShowCallback mOnShowCallback = null;
+    private OnErrorCallback mOnErrorCallback = null;
 
     private String mName = "";
 
@@ -281,6 +284,11 @@ public class Doorbell {
 
     public Doorbell setOnShowCallback(OnShowCallback onShowCallback) {
         this.mOnShowCallback = onShowCallback;
+        return this;
+    }
+
+    public Doorbell setOnErrorCallback(OnErrorCallback onErrorCallback) {
+        this.mApi.setOnErrorCallback(onErrorCallback);
         return this;
     }
 

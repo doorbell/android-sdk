@@ -1,7 +1,9 @@
 package io.doorbell.android;
 
+import io.doorbell.android.callbacks.OnErrorCallback;
 import io.doorbell.android.manavo.rest.RestApi;
 import io.doorbell.android.manavo.rest.RestCache;
+import io.doorbell.android.manavo.rest.RestErrorCallback;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -9,6 +11,7 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.util.Base64;
+import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -27,6 +30,8 @@ public class DoorbellApi extends RestApi {
     private int npsRating;
     private ArrayList<String> tags;
 
+    private OnErrorCallback mOnErrorCallback = null;
+
     public DoorbellApi(Activity activity) {
         super(activity);
 
@@ -36,6 +41,11 @@ public class DoorbellApi extends RestApi {
         this.language = activity.getResources().getConfiguration().locale.getLanguage();
 
         this.reset();
+    }
+
+    public DoorbellApi setOnErrorCallback(OnErrorCallback onErrorCallback) {
+        this.mOnErrorCallback = onErrorCallback;
+        return this;
     }
 
     public void setAppId(long id) {
@@ -58,6 +68,26 @@ public class DoorbellApi extends RestApi {
 
         this.cachePolicy = RestCache.CachePolicy.NETWORK_ONLY;
         this.npsRating = -1;
+
+        this.setErrorCallback(new RestErrorCallback() {
+            @Override
+            public void error(String message) {
+                if (DoorbellApi.this.mOnErrorCallback != null) {
+                    DoorbellApi.this.mOnErrorCallback.error(message);
+                } else {
+                    Toast.makeText(activity, message, Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void error(Exception exception) {
+                if (DoorbellApi.this.mOnErrorCallback != null) {
+                    DoorbellApi.this.mOnErrorCallback.error(exception);
+                } else {
+                    Toast.makeText(activity, exception.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 
     public void impression() {

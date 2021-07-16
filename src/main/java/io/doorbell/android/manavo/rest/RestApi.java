@@ -117,7 +117,7 @@ public class RestApi {
                     } catch (JSONException e) {
                         e.printStackTrace();
 
-                        RestApi.this.onError(e.getMessage());
+                        RestApi.this.onError(e);
                     }
                 } else if (b.containsKey("error")) {
                     RestApi.this.onError(b.getString("error"));
@@ -268,11 +268,27 @@ public class RestApi {
         }
     }
 
+    public void onStatusCodeError(Exception exception) {
+        if (this.errorCallback != null) {
+            this.errorCallback.error(exception);
+        } else {
+            Toast.makeText(this.activity, exception.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
     public void onError(String message) {
         if (this.errorCallback != null) {
             this.errorCallback.error(message);
         } else {
             Toast.makeText(this.activity, message, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void onError(Exception exception) {
+        if (this.errorCallback != null) {
+            this.errorCallback.error(exception);
+        } else {
+            Toast.makeText(this.activity, exception.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -320,7 +336,7 @@ public class RestApi {
             try {
                 this.rest.get(this.endpoint);
             } catch (IOException e) {
-                this.onStatusCodeError(0, e.getMessage());
+                this.onStatusCodeError(e);
             }
         }
     }
@@ -335,7 +351,7 @@ public class RestApi {
         try {
             this.rest.post(this.endpoint);
         } catch (IOException e) {
-            this.onStatusCodeError(0, e.getMessage());
+            this.onStatusCodeError(e);
         }
     }
 
@@ -349,7 +365,7 @@ public class RestApi {
         try {
             this.rest.put(this.endpoint);
         } catch (IOException e) {
-            this.onStatusCodeError(0, e.getMessage());
+            this.onStatusCodeError(e);
         }
     }
 
@@ -362,7 +378,7 @@ public class RestApi {
         try {
             this.rest.delete(this.endpoint);
         } catch (IOException e) {
-            this.onStatusCodeError(0, e.getMessage());
+            this.onStatusCodeError(e);
         }
     }
 
