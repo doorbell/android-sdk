@@ -55,8 +55,6 @@ public class RestApi {
 
         this.rest = new RestRequest();
 
-        this.patchTLS();
-
         this.rest.setHandler(new Handler() {
             public void handleMessage(Message msg) {
                 Bundle b = msg.getData();
@@ -133,7 +131,16 @@ public class RestApi {
         });
     }
 
-    private void patchTLS() {
+    public boolean isFullySupported() {
+        try {
+            ProviderInstaller.installIfNeeded(this.activity);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public void patchTLSOrPromptUser() {
         Log.e("RestApi", "Trying to patch TLS");
 
         try {

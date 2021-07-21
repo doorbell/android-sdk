@@ -65,7 +65,6 @@ public class Doorbell {
 
     private OnFeedbackSentCallback mOnFeedbackSentCallback = null;
     private OnShowCallback mOnShowCallback = null;
-    private OnErrorCallback mOnErrorCallback = null;
 
     private String mName = "";
 
@@ -132,6 +131,14 @@ public class Doorbell {
                 }
             }
         });
+    }
+
+    public void patchTLSOrPromptUser() {
+        this.mApi.patchTLSOrPromptUser();
+    }
+
+    public boolean isFullySupported() {
+        return this.mApi.isFullySupported();
     }
 
     public AlertDialog.Builder getDialogBuilder() {
