@@ -19,6 +19,7 @@ import android.text.Html;
 import android.text.InputType;
 import android.text.method.LinkMovementMethod;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -319,7 +320,14 @@ public class Doorbell {
         try {
             View v = this.mActivity.getWindow().getDecorView().getRootView();
             v.setDrawingCacheEnabled(true);
-            this.mScreenshot = v.getDrawingCache();
+            Bitmap drawingCache = v.getDrawingCache();
+            if (drawingCache != null) {
+                // Need to create a new one, otherwise we get the following exception:
+                // "java.lang.IllegalStateException: Can't compress a recycled bitmap"
+                this.mScreenshot = Bitmap.createBitmap(drawingCache);
+            } else {
+                Log.e("Doorbell", "Drawing cache was null");
+            }
             v.setDrawingCacheEnabled(false);
         } catch (Exception e) {
             e.printStackTrace();
