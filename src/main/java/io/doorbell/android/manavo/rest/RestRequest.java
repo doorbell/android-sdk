@@ -35,7 +35,7 @@ public class RestRequest {
     private String username;
     private String password;
     private Handler handler;
-    private final ExecutorService executorService;
+    private ExecutorService executorService;
 
     private boolean acceptAllSslCertificates = false;
 
@@ -46,7 +46,7 @@ public class RestRequest {
     private String contentType = null;
 
     public RestRequest() {
-        this.executorService = Executors.newFixedThreadPool(1);
+        this.executorService = Executors.newFixedThreadPool(2);
     }
 
     public void setContentType(String type) {
@@ -171,6 +171,10 @@ public class RestRequest {
         }
 
         request.setRequestProperty("Accept", "application/json");
+
+        if (this.executorService.isShutdown()) {
+            this.executorService = Executors.newFixedThreadPool(2);
+        }
 
         this.executorService.execute(() -> {
             Bundle b = RestRequest.this.executeRequest(request);
