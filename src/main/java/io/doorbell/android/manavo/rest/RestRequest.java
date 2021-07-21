@@ -24,6 +24,8 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -187,7 +189,7 @@ public class RestRequest {
     }
 
     public void cancelRequest() {
-        this.executorService.shutdown();
+        this.executorService.shutdownNow();
     }
 
     private Bundle executeRequest(HttpsURLConnection request) {
