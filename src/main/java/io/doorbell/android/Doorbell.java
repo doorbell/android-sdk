@@ -316,10 +316,14 @@ public class Doorbell {
     }
 
     public Doorbell captureScreenshot() {
-        View v = this.mActivity.getWindow().getDecorView().getRootView();
-        v.setDrawingCacheEnabled(true);
-        this.mScreenshot = Bitmap.createBitmap(v.getDrawingCache());
-        v.setDrawingCacheEnabled(false);
+        try {
+            View v = this.mActivity.getWindow().getDecorView().getRootView();
+            v.setDrawingCacheEnabled(true);
+            this.mScreenshot = v.getDrawingCache();
+            v.setDrawingCacheEnabled(false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return this;
     }

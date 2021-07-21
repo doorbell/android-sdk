@@ -15,6 +15,8 @@ import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -101,12 +103,23 @@ public class DoorbellApi extends RestApi {
     }
 
     public void sendFeedbackWithScreenshot(String message, String email, JSONObject properties, String name, Bitmap screenshot) {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        screenshot.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-        byte[] byteArray = byteArrayOutputStream .toByteArray();
-        String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            screenshot.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+            byte[] byteArray = byteArrayOutputStream.toByteArray();
+            String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
 
-        this.addParameter("android_screenshot", encoded);
+            this.addParameter("android_screenshot", encoded);
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            String sStackTrace = sw.toString(); // stack trace as a string
+
+            this.addParameter("android_screenshot_error_stack_trace", sStackTrace);
+        }
 
         this.sendFeedback(message, email, properties, name);
     }
