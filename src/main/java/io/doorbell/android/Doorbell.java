@@ -316,6 +316,35 @@ public class Doorbell {
         return this;
     }
 
+    public Doorbell track(String userID, String eventName, JSONObject attributes) {
+        DoorbellApi newApi = new DoorbellApi(this.mActivity);
+        newApi.setAppId(this.mApi.getAppId());
+        newApi.setApiKey(this.mApi.getApiKey());
+
+        newApi.setCallback(new RestCallback() {
+            @Override
+            public void success(Object obj) {
+                try {
+                    JSONObject response = (JSONObject) obj;
+
+                    if (response.has("action") && !response.optString("action").equalsIgnoreCase("")) {
+                        String action = response.getString("action");
+
+                        if (action.equalsIgnoreCase("show")) {
+                            Doorbell.this.show();
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        newApi.track(userID, eventName, attributes);
+
+        return this;
+    }
+
     public Doorbell captureScreenshot() {
         try {
             View v = this.mActivity.getWindow().getDecorView().getRootView();

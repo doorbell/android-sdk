@@ -3,6 +3,7 @@ package io.doorbell.android;
 import io.doorbell.android.callbacks.OnErrorCallback;
 import io.doorbell.android.manavo.rest.RestApi;
 import io.doorbell.android.manavo.rest.RestCache;
+import io.doorbell.android.manavo.rest.RestCallback;
 import io.doorbell.android.manavo.rest.RestErrorCallback;
 
 import org.json.JSONArray;
@@ -11,6 +12,7 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.util.Base64;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
@@ -54,8 +56,16 @@ public class DoorbellApi extends RestApi {
         this.mAppId = id;
     }
 
+    public long getAppId() {
+        return this.mAppId;
+    }
+
     public void setApiKey(String key) {
         this.mApiKey = key;
+    }
+
+    public String getApiKey() {
+        return this.mApiKey;
     }
 
     public void setLanguage(String language) {
@@ -100,6 +110,18 @@ public class DoorbellApi extends RestApi {
     public void open() {
         this.setLoadingMessage(null);
         this.post("applications/" + this.mAppId + "/open?key=" + this.mApiKey);
+    }
+
+    public void track(String userID, String eventName, JSONObject attributes) {
+        this.setLoadingMessage(null);
+
+        this.addParameter("external_user_id", userID);
+        this.addParameter("name", eventName);
+        if (attributes != null) {
+            this.addParameter("attributes_json", attributes);
+        }
+
+        this.post("applications/" + this.mAppId + "/event?key=" + this.mApiKey);
     }
 
     public void sendFeedbackWithScreenshot(String message, String email, JSONObject properties, String name, Bitmap screenshot) {
