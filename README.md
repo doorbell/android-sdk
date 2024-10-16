@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    implementation "io.doorbell:android-sdk:0.4.7@aar"
+    implementation "io.doorbell:android-sdk:0.4.8@aar"
 }
 ```
 
