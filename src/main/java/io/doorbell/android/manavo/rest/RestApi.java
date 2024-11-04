@@ -55,80 +55,82 @@ public class RestApi {
 
         this.rest = new RestRequest();
 
-        this.rest.setHandler(new Handler() {
-            public void handleMessage(Message msg) {
-                Bundle b = msg.getData();
+        Handler.Callback handleMessage = (Message msg) -> {
+            Bundle b = msg.getData();
 
-                if (b.containsKey("data")) {
-                    String data = b.getString("data");
+            if (b.containsKey("data")) {
+                String data = b.getString("data");
 
-                    try {
-                        if (data == null) {
-                            RestApi.this.onSuccess(null);
-                        } else if (data.trim().substring(0, 1).equalsIgnoreCase("{")) {
-                            Object returnObject = new JSONObject(data);
+                try {
+                    if (data == null) {
+                        RestApi.this.onSuccess(null);
+                    } else if (data.trim().substring(0, 1).equalsIgnoreCase("{")) {
+                        Object returnObject = new JSONObject(data);
 
-                            // we want to save the cache
-                            if (RestApi.this.requestType.equalsIgnoreCase("get") && RestApi.this.cachePolicy != RestCache.CachePolicy.IGNORE_CACHE) {
-                                try {
-                                    RestCache.save(RestApi.this, data.trim());
-                                } catch (UnsupportedEncodingException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-
-                            if (RestApi.this.cachePolicy != RestCache.CachePolicy.UPDATE_CACHE) {
-                                RestApi.this.onSuccess(returnObject);
-                            }
-                        } else if (data.trim().substring(0, 1).equalsIgnoreCase("[")) {
-                            Object returnObject = new JSONArray(data);
-
-                            // we want to save the cache
-                            if (RestApi.this.requestType.equalsIgnoreCase("get") && RestApi.this.cachePolicy != RestCache.CachePolicy.IGNORE_CACHE) {
-                                try {
-                                    RestCache.save(RestApi.this, data.trim());
-                                } catch (UnsupportedEncodingException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-
-                            if (RestApi.this.cachePolicy != RestCache.CachePolicy.UPDATE_CACHE) {
-                                RestApi.this.onSuccess(returnObject);
-                            }
-                        } else {
-                            // incorrect format
-                            Log.d("RestApi", data);
-                            //RestApi.this.onError("Unknown format of data");
-                            // we want to save the cache
-                            if (RestApi.this.requestType.equalsIgnoreCase("get") && RestApi.this.cachePolicy != RestCache.CachePolicy.IGNORE_CACHE) {
-                                try {
-                                    RestCache.save(RestApi.this, data.trim());
-                                } catch (UnsupportedEncodingException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-
-                            if (RestApi.this.cachePolicy != RestCache.CachePolicy.UPDATE_CACHE) {
-                                RestApi.this.onSuccess(data);
+                        // we want to save the cache
+                        if (RestApi.this.requestType.equalsIgnoreCase("get") && RestApi.this.cachePolicy != RestCache.CachePolicy.IGNORE_CACHE) {
+                            try {
+                                RestCache.save(RestApi.this, data.trim());
+                            } catch (UnsupportedEncodingException e) {
+                                e.printStackTrace();
                             }
                         }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
 
-                        RestApi.this.onError(e);
+                        if (RestApi.this.cachePolicy != RestCache.CachePolicy.UPDATE_CACHE) {
+                            RestApi.this.onSuccess(returnObject);
+                        }
+                    } else if (data.trim().substring(0, 1).equalsIgnoreCase("[")) {
+                        Object returnObject = new JSONArray(data);
+
+                        // we want to save the cache
+                        if (RestApi.this.requestType.equalsIgnoreCase("get") && RestApi.this.cachePolicy != RestCache.CachePolicy.IGNORE_CACHE) {
+                            try {
+                                RestCache.save(RestApi.this, data.trim());
+                            } catch (UnsupportedEncodingException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        if (RestApi.this.cachePolicy != RestCache.CachePolicy.UPDATE_CACHE) {
+                            RestApi.this.onSuccess(returnObject);
+                        }
+                    } else {
+                        // incorrect format
+                        Log.d("RestApi", data);
+                        //RestApi.this.onError("Unknown format of data");
+                        // we want to save the cache
+                        if (RestApi.this.requestType.equalsIgnoreCase("get") && RestApi.this.cachePolicy != RestCache.CachePolicy.IGNORE_CACHE) {
+                            try {
+                                RestCache.save(RestApi.this, data.trim());
+                            } catch (UnsupportedEncodingException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        if (RestApi.this.cachePolicy != RestCache.CachePolicy.UPDATE_CACHE) {
+                            RestApi.this.onSuccess(data);
+                        }
                     }
-                } else if (b.containsKey("error")) {
-                    RestApi.this.onError(b.getString("error"));
-                } else if (b.containsKey("statusCodeError") && b.containsKey("statusCodeErrorNumber")) {
-                    RestApi.this.onStatusCodeError(b.getInt("statusCodeErrorNumber"), b.getString("statusCodeError"));
-                } else {
-                    RestApi.this.onError("Misconfigured code");
-                }
+                } catch (JSONException e) {
+                    e.printStackTrace();
 
-                RestApi.this.reset();
-                RestApi.this.hideLoadingDialog();
+                    RestApi.this.onError(e);
+                }
+            } else if (b.containsKey("error")) {
+                RestApi.this.onError(b.getString("error"));
+            } else if (b.containsKey("statusCodeError") && b.containsKey("statusCodeErrorNumber")) {
+                RestApi.this.onStatusCodeError(b.getInt("statusCodeErrorNumber"), b.getString("statusCodeError"));
+            } else {
+                RestApi.this.onError("Misconfigured code");
             }
-        });
+
+            RestApi.this.reset();
+            RestApi.this.hideLoadingDialog();
+
+            return true;
+        };
+
+        this.rest.setHandler(new Handler(handleMessage));
     }
 
     public boolean isFullySupported() {

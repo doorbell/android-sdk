@@ -160,7 +160,7 @@ public class Doorbell {
 
             this.addProperty(PROPERTY_WI_FI_ENABLED, supState);
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
 
         boolean mobileDataEnabled = false; // Assume disabled
@@ -182,7 +182,7 @@ public class Doorbell {
 
             this.addProperty(PROPERTY_GPS_ENABLED, gpsEnabled);
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
 
         try {
@@ -193,14 +193,14 @@ public class Doorbell {
             String resolution = Integer.toString(metrics.widthPixels) + "x" + Integer.toString(metrics.heightPixels);
             this.addProperty(PROPERTY_SCREEN_RESOLUTION, resolution);
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
 
         try {
             String activityName = this.mActivity.getClass().getSimpleName();
             this.addProperty(PROPERTY_ACTIVITY, activityName);
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
 
         this.addProperty(PROPERTY_APP_LANGUAGE, this.mActivity.getResources().getConfiguration().locale.getDisplayName());
@@ -331,7 +331,7 @@ public class Doorbell {
                         String action = response.getString("action");
 
                         if (action.equalsIgnoreCase("show")) {
-                            Doorbell.this.show();
+                            Doorbell.this.show(response.getInt("event_id"));
                         }
                     }
                 } catch (Exception e) {
@@ -513,10 +513,24 @@ public class Doorbell {
     }
 
     public AlertDialog show() {
-        this.mApi.open();
+        return this.show(0);
+    }
+
+    public AlertDialog show(int eventID) {
+        DoorbellApi newApi = new DoorbellApi(this.mActivity);
+        newApi.setAppId(this.mApi.getAppId());
+        newApi.setApiKey(this.mApi.getApiKey());
+        newApi.open();
+
+        this.mApi.setEventID(eventID);
 
         if (this.mDialog == null) {
             this.mDialog = this.mDialogBuilder.create();
+
+            this.mDialog.setOnDismissListener(dialogInterface -> {
+                // Reset this, since next time it shows up it won't relate to this event ID anymore
+                Doorbell.this.mApi.setEventID(0);
+            });
         }
         this.mDialog.show();
 
